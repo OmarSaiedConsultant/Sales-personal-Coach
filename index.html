@@ -1,0 +1,1351 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { 
+  LayoutDashboard, 
+  CalendarDays, 
+  Grid2X2, 
+  Target, 
+  BarChart3, 
+  PhoneCall, 
+  Users, 
+  FileText, 
+  BellRing, 
+  Settings, 
+  Sparkles, 
+  Plus, 
+  Search, 
+  Sun, 
+  Moon, 
+  Languages, 
+  TrendingUp, 
+  ArrowUpRight, 
+  Clock, 
+  AlertCircle, 
+  CheckCircle2, 
+  ChevronRight, 
+  Filter, 
+  MoreVertical, 
+  DollarSign, 
+  Briefcase, 
+  Flame, 
+  Check, 
+  X, 
+  Bot, 
+  Mic, 
+  ArrowRight,
+  BrainCircuit,
+  MessageSquare,
+  ShieldAlert,
+  Send,
+  Zap,
+  Tag,
+  PieChart as PieIcon,
+  Activity,
+  Layers,
+  ChevronDown,
+  BookOpen,
+  HelpCircle,
+  Play,
+  Pause,
+  RotateCcw,
+  BookMarked,
+  GraduationCap,
+  Award,
+  Compass,
+  Smile,
+  Frown,
+  Meh,
+  ThumbsUp,
+  Sliders,
+  Maximize2,
+  Calendar,
+  Crosshair,
+  Lightbulb,
+  Kanban,
+  Repeat,
+  Heart,
+  FileCheck
+} from 'lucide-react';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  Tooltip as RechartsTooltip, 
+  ResponsiveContainer, 
+  Cell, 
+  PieChart, 
+  Pie, 
+  AreaChart, 
+  Area,
+  CartesianGrid,
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis
+} from 'recharts';
+
+const TRANSLATIONS = {
+  en: {
+    appName: "Sales OS",
+    appSub: "Personal Sales Operating System",
+    questionOfDay: "How can I become a better salesperson today?",
+    dashboard: "Today's Focus",
+    planner: "Daily Planner & Time-Blocking",
+    focusMode: "Focus Mode",
+    journal: "Sales Journal & Reflection",
+    eisenhower: "Priority Matrix",
+    habits: "Sales Habits",
+    objections: "Objection Library",
+    callReviews: "Call & Meeting Reviews",
+    learning: "Learning Center",
+    goals: "Goal Hierarchy",
+    analytics: "Performance Analytics",
+    rejections: "Rejection Analysis",
+    reviews: "Review System",
+    crm: "Light CRM (Pipeline)",
+    settings: "Settings",
+    
+    // Focus & Dashboard
+    topPriorities: "Today's Top 3 Priorities",
+    todayObjective: "Daily Sales Objective",
+    motivationQuote: "Daily Sales Mindset",
+    deepWorkTime: "Deep Work Time",
+    completedTasks: "Completed Focus Items",
+    dailyTarget: "Daily Call & Meeting Target",
+    weeklyTarget: "Weekly Target",
+    monthlyTarget: "Monthly Revenue Goal",
+    biggestWeakness: "Weekly Area for Growth",
+    biggestOpportunity: "Today's Hot Opportunity",
+    suggestedAction: "AI Suggested Focus Action",
+    endOfDayPrompt: "What did you learn today?",
+    
+    // Actions & Tools
+    quickAction: "Quick Log / Action",
+    logCall: "Review Call",
+    journalEntry: "Daily Journal Entry",
+    addHabit: "New Habit",
+    addObjection: "Add Objection Tactic",
+    addLearning: "Log Book / Course",
+    startFocus: "Start Focus Timer",
+    aiCoach: "AI Sales Performance Coach",
+    aiAnalyzing: "Analyzing your sales activity with Gemini AI...",
+    
+    // Journal
+    whatWentWell: "What went well today?",
+    whatWentWrong: "What went wrong or was lost?",
+    whatILearned: "What key insight did I learn?",
+    whatToImprove: "What will I improve tomorrow?",
+    biggestWin: "Biggest Win of the Day",
+    biggestMistake: "Biggest Mistake to Fix",
+    mood: "Energy & Confidence Level",
+    
+    // Language & UI
+    searchPlaceholder: "Search goals, objections, journal, learning, contacts... (Press '/')",
+    languageToggle: "العربية",
+    themeToggle: "Theme",
+    save: "Save Entry",
+    cancel: "Cancel",
+    close: "Close"
+  },
+  ar: {
+    appName: "Sales OS",
+    appSub: "نظام التشغيل الشخصي للمبيعات",
+    questionOfDay: "كيف يمكنني أن أصبح بائعاً أفضل اليوم؟",
+    dashboard: "تركيز اليوم",
+    planner: "المخطط اليومي وتنظيم الوقت",
+    focusMode: "وضع التركيز العميق",
+    journal: "مفكرة المبيعات والتأمل",
+    eisenhower: "مصفوفة الأولويات",
+    habits: "عادات المبيعات اليومية",
+    objections: "مكتبة التعامل مع الاعتراضات",
+    callReviews: "مراجعة المكالمات والاجتماعات",
+    learning: "مركز التعلم والنمو",
+    goals: "هرمية الأهداف",
+    analytics: "تحليلات الأداء والتطوير",
+    rejections: "تحليل صفقات الخسارة",
+    reviews: "نظام المراجعة الدورية",
+    crm: "إدارة العملاء المبسطة",
+    settings: "الإعدادات",
+    
+    // Focus & Dashboard
+    topPriorities: "أهم 3 أهداف اليوم",
+    todayObjective: "الهدف اليومي للمبيعات",
+    motivationQuote: "عقلية اليوم للمبيعات",
+    deepWorkTime: "وقت العمل العميق",
+    completedTasks: "المهام المكتملة",
+    dailyTarget: "مستهدف المكالمات والاجتماعات",
+    weeklyTarget: "المستهدف الأسبوعي",
+    monthlyTarget: "هدف الإيرادات الشهري",
+    biggestWeakness: "نقطة التطوير الأسبوعية",
+    biggestOpportunity: "أهم فرصة بيعية اليوم",
+    suggestedAction: "إجراء اليوم المقترح بالذكاء الاصطناعي",
+    endOfDayPrompt: "ماذا تعلمت اليوم؟",
+    
+    // Actions & Tools
+    quickAction: "إجراء سريع",
+    logCall: "تسجيل مراجعة مكالمة",
+    journalEntry: "تدوين يومية المبيعات",
+    addHabit: "عادة جديدة",
+    addObjection: "إضافة اعتراض وحله",
+    addLearning: "تسجيل كتاب / دورة",
+    startFocus: "بدء مؤقت التركيز",
+    aiCoach: "الموجه الذكي للبيع الشخصي",
+    aiAnalyzing: "جاري تحليل أدائك البيعي عبر Gemini AI...",
+    
+    // Journal
+    whatWentWell: "ما الذي نجحت فيه اليوم؟",
+    whatWentWrong: "ما الذي لم يمر بشكل جيد؟",
+    whatILearned: "ما هي الفكرة الرئيسية التي تعلمتها؟",
+    whatToImprove: "ما الذي سأتحسن فيه غداً؟",
+    biggestWin: "أكبر إنجاز اليوم",
+    biggestMistake: "أكبر خطأ يجب تصحيحه",
+    mood: "مستوى الطاقة والثقة",
+    
+    // Language & UI
+    searchPlaceholder: "بحث شامل في الأهداف، الاعتراضات، الملاحظات والعملاء... (اضغط '/')",
+    languageToggle: "English",
+    themeToggle: "المظهر",
+    save: "حفظ البيانات",
+    cancel: "إلغاء",
+    close: "إغلاق"
+  }
+};
+
+const INITIAL_HABITS = [
+  { id: 'h1', title: 'Morning Sales Planning (15m)', category: 'Planning', streak: 12, completedToday: true, score: 95 },
+  { id: 'h2', title: 'Outbound Prospecting (10 Contacts)', category: 'Execution', streak: 5, completedToday: false, score: 80 },
+  { id: 'h3', title: 'Post-Call Debrief & AI Review', category: 'Reflection', streak: 8, completedToday: true, score: 88 },
+  { id: 'h4', title: 'Read 20 min of Sales Methodology', category: 'Learning', streak: 15, completedToday: false, score: 92 },
+  { id: 'h5', title: 'Update CRM Light Notes', category: 'Organization', streak: 4, completedToday: false, score: 75 }
+];
+
+const INITIAL_OBJECTIONS = [
+  {
+    id: 'o1',
+    objection: "Your price is 30% higher than your competitor CloudFlex.",
+    category: "Pricing",
+    myResponse: "I highlighted our local KSA data center security and SLA response speed.",
+    bestResponse: "Acknowledge value gap first: 'Price is only an issue in the absence of value. CloudFlex offers low costs because they lack 99.99% local SLA uptime guarantees which cost $50k+ per outage.'",
+    alternativeResponse: "Offer flexible payment terms rather than discounting total contract value.",
+    successRate: 78
+  },
+  {
+    id: 'o2',
+    objection: "We don't have the budget allocated for this quarter.",
+    category: "Budget / Timing",
+    myResponse: "Asked when their new fiscal budget opens.",
+    bestResponse: "Shift from Cost to ROI: 'If this tool saves your team 12 hours a week starting next week, delaying cost actually burns $8,000 per month in lost productivity.'",
+    alternativeResponse: "Propose a pilot phase with a smaller commitment.",
+    successRate: 64
+  }
+];
+
+const INITIAL_LEARNING = [
+  { id: 'l1', title: 'SPIN Selling Method', type: 'Book', author: 'Neil Rackham', progress: 85, keyLesson: 'Ask Implication and Need-Payoff questions before pitching features.', status: 'In Progress' },
+  { id: 'l2', title: 'Mastering Enterprise SaaS Negotiations', type: 'Course', author: 'Chris Voss Academy', progress: 100, keyLesson: 'Label feelings and use tactical empathy when dealing with procurement agents.', status: 'Completed' },
+  { id: 'l3', title: 'Sales Enablement Podcast #142', type: 'Podcast', author: 'Andy Paul', progress: 40, keyLesson: 'Buyer curiosity is the highest predictor of deal momentum.', status: 'In Progress' }
+];
+
+const INITIAL_JOURNAL = [
+  {
+    id: 'j1',
+    date: '2026-07-25',
+    whatWentWell: "Handled price pushback well during the TechCorp ME demo using ROI math.",
+    whatWentWrong: "Rushed through the discovery phase with FinTech Hub without finding their true pain driver.",
+    whatILearned: "When buyers ask for price immediately, reframe to discovery before giving numbers.",
+    whatToImprove: "Slow down questions during discovery calls tomorrow.",
+    biggestWin: "Advanced $45k deal to Proposal phase.",
+    biggestMistake: "Interrupted buyer twice during objection discussion.",
+    energy: 4,
+    confidence: 5
+  }
+];
+
+const INITIAL_GOALS = [
+  { id: 'g1', level: 'Quarter', title: 'Achieve $250k Closed Revenue in Q3', progress: 68, target: '$250,000', deadline: '2026-09-30', kpi: 'Revenue' },
+  { id: 'g2', level: 'Month', title: 'Book 24 Qualified Discovery Meetings', progress: 75, target: '24 Meetings', deadline: '2026-07-31', kpi: 'Meetings' },
+  { id: 'g3', level: 'Week', title: 'Conduct 15 Outbound Calls & 5 Demos', progress: 80, target: '15 Calls / 5 Demos', deadline: '2026-07-28', kpi: 'Activity' }
+];
+
+const INITIAL_TASKS = [
+  { id: 't1', title: 'Prepare SPIN discovery questions for Apex Holding', type: 'Call Prep', quadrant: 1, duration: 25, completed: false },
+  { id: 't2', title: 'Read Chapter 4 of SPIN Selling book', type: 'Learning', quadrant: 2, duration: 20, completed: true },
+  { id: 't3', title: 'Review today\'s TechCorp objection recording with AI', type: 'Reflection', quadrant: 1, duration: 15, completed: false },
+  { id: 't4', title: 'Clean up outdated contact phone numbers in CRM', type: 'Organization', quadrant: 4, duration: 10, completed: false }
+];
+
+const INITIAL_CALL_REVIEWS = [
+  {
+    id: 'cr1',
+    customer: 'Ahmad Al-Mansoor',
+    company: 'TechCorp ME',
+    date: '2026-07-26',
+    summary: 'Executive pitch regarding KSA cloud migration. High interest in security guarantees.',
+    painPoints: 'Data latency and compliance fears with non-local servers.',
+    objections: 'Implementation lead time takes 6 weeks.',
+    buyingSignals: 'Asked if we can start technical onboarding by early August.',
+    mistake: 'Spoke 65% of the time instead of listening.',
+    improvement: 'Use 3-second pause after buyer finishes speaking.',
+    aiFeedback: 'Great objection handling on data sovereignty! Aim to reduce talk-to-listen ratio from 65/35 to 40/60 on the next call.'
+  }
+];
+
+async function callGeminiAPI(prompt, systemInstruction = "") {
+  const apiKey = ""; // Runtime key injection by environment
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+  
+  const payload = {
+    contents: [{ parts: [{ text: prompt }] }],
+    systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined
+  };
+
+  try {
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "AI Coach is currently analyzing. Try again shortly.";
+  } catch (err) {
+    console.error("Gemini API Error:", err);
+    return "Could not connect to Gemini AI coach. Please check internet connection.";
+  }
+}
+
+export default function App() {
+  // App Core States
+  const [lang, setLang] = useState('en');
+  const [theme, setTheme] = useState('dark');
+  const [currentTab, setCurrentTab] = useState('dashboard');
+  
+  // Sales OS Modules Data States
+  const [habits, setHabits] = useState(INITIAL_HABITS);
+  const [objections, setObjections] = useState(INITIAL_OBJECTIONS);
+  const [learningList, setLearningList] = useState(INITIAL_LEARNING);
+  const [journalEntries, setJournalEntries] = useState(INITIAL_JOURNAL);
+  const [goals, setGoals] = useState(INITIAL_GOALS);
+  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [callReviews, setCallReviews] = useState(INITIAL_CALL_REVIEWS);
+
+  // Focus Mode State
+  const [focusTimer, setFocusTimer] = useState(25 * 60);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [activeFocusTask, setActiveFocusTask] = useState(INITIAL_TASKS[0]);
+
+  // AI & Search UI States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAICoachOpen, setIsAICoachOpen] = useState(false);
+  const [aiCoachResponse, setAiCoachResponse] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  
+  // Modals & Floating Action States
+  const [isFABOpen, setIsFABOpen] = useState(false);
+  const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+  const [isCallReviewModalOpen, setIsCallReviewModalOpen] = useState(false);
+  const [isObjectionModalOpen, setIsObjectionModalOpen] = useState(false);
+
+  // Form Inputs State
+  const [newJournal, setNewJournal] = useState({
+    whatWentWell: '', whatWentWrong: '', whatILearned: '', whatToImprove: '', biggestWin: '', biggestMistake: '', energy: 4, confidence: 5
+  });
+
+  const [newCallReview, setNewCallReview] = useState({
+    customer: '', company: '', summary: '', painPoints: '', objections: '', buyingSignals: '', mistake: '', improvement: ''
+  });
+
+  const [newObjectionForm, setNewObjectionForm] = useState({
+    objection: '', category: 'Pricing', myResponse: '', bestResponse: '', alternativeResponse: ''
+  });
+
+  const t = TRANSLATIONS[lang];
+
+  useEffect(() => {
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  }, [lang]);
+
+  // Focus Timer Logic
+  useEffect(() => {
+    let interval = null;
+    if (isTimerRunning && focusTimer > 0) {
+      interval = setInterval(() => setFocusTimer(prev => prev - 1), 1000);
+    } else if (focusTimer === 0) {
+      setIsTimerRunning(false);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, focusTimer]);
+
+  // Keyboard shortcut '/'
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const runAICoachAnalysis = async (customPrompt = "") => {
+    setIsAiLoading(true);
+    setIsAICoachOpen(true);
+
+    const context = `
+    User Salesperson Context:
+    - Recent Journal Entry: "${journalEntries[0]?.whatWentWell || 'N/A'}"
+    - Recent Call Mistake: "${callReviews[0]?.mistake || 'N/A'}"
+    - Habit Streak Score: ${Math.round(habits.reduce((acc, h) => acc + h.score, 0) / habits.length)}%
+    - Remaining Focus Tasks Today: ${tasks.filter(t => !t.completed).length}
+    `;
+
+    const systemPrompt = `You are an elite Sales Performance Coach (inspired by top SaaS deal closers, SPIN Selling, and high-performance psychology). Your tone is encouraging, razor-sharp, actionable, and focused purely on helping the salesperson improve their mindset, closing technique, and daily productivity. Respond in ${lang === 'ar' ? 'Arabic' : 'English'}.`;
+
+    const promptText = customPrompt || `
+    Analyze my recent sales activity context:
+    ${context}
+
+    Give me:
+    1. One actionable tip to win today.
+    2. How to fix my recent call mistake.
+    3. A brief motivational mindset boost.
+    `;
+
+    const result = await callGeminiAPI(promptText, systemPrompt);
+    setAiCoachResponse(result);
+    setIsAiLoading(false);
+  };
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return { goals: [], objections: [], learning: [], journal: [] };
+    const q = searchQuery.toLowerCase();
+    return {
+      goals: goals.filter(g => g.title.toLowerCase().includes(q)),
+      objections: objections.filter(o => o.objection.toLowerCase().includes(q) || o.category.toLowerCase().includes(q)),
+      learning: learningList.filter(l => l.title.toLowerCase().includes(q) || l.author.toLowerCase().includes(q)),
+      journal: journalEntries.filter(j => j.whatILearned.toLowerCase().includes(q) || j.biggestWin.toLowerCase().includes(q))
+    };
+  }, [searchQuery, goals, objections, learningList, journalEntries]);
+
+  const formatTimer = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className={`min-h-screen font-sans ${theme === 'dark' ? 'bg-[#09090b] text-slate-100' : 'bg-slate-50 text-slate-800'} transition-colors duration-200 flex flex-col md:flex-row`}>
+      
+      {/* Sidebar - Personal OS Navigation */}
+      <aside className={`w-full md:w-64 border-b md:border-b-0 md:border-r ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]' : 'border-slate-200 bg-white'} flex flex-col justify-between shrink-0 p-4`}>
+        <div>
+          {/* Logo & Salesperson Badge */}
+          <div className="flex items-center justify-between mb-6 px-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white font-bold">
+                <Compass className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="font-extrabold text-base tracking-tight leading-none text-slate-100">{t.appName}</h1>
+                <span className="text-[10px] text-amber-400 font-medium tracking-wide">{t.appSub}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Core Daily Question Prompt */}
+          <div className="p-3 mb-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-transparent border border-amber-500/20 text-[11px] font-medium text-amber-200/90 leading-tight">
+            💡 "{t.questionOfDay}"
+          </div>
+
+          {/* Sidebar Navigation Items */}
+          <nav className="space-y-1 max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
+            {[
+              { id: 'dashboard', icon: LayoutDashboard, label: t.dashboard },
+              { id: 'planner', icon: CalendarDays, label: t.planner },
+              { id: 'focus', icon: Crosshair, label: t.focusMode },
+              { id: 'journal', icon: BookMarked, label: t.journal },
+              { id: 'eisenhower', icon: Grid2X2, label: t.eisenhower },
+              { id: 'habits', icon: Repeat, label: t.habits },
+              { id: 'objections', icon: ShieldAlert, label: t.objections },
+              { id: 'callReviews', icon: PhoneCall, label: t.callReviews },
+              { id: 'learning', icon: GraduationCap, label: t.learning },
+              { id: 'goals', icon: Target, label: t.goals },
+              { id: 'analytics', icon: BarChart3, label: t.analytics },
+              { id: 'rejections', icon: Frown, label: t.rejections },
+              { id: 'crm', icon: Kanban, label: t.crm },
+              { id: 'settings', icon: Settings, label: t.settings },
+            ].map(item => {
+              const Icon = item.icon;
+              const active = currentTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setCurrentTab(item.id)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                    active 
+                      ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-sm' 
+                      : `${theme === 'dark' ? 'text-slate-400 hover:bg-zinc-800/60 hover:text-slate-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon className={`w-4 h-4 ${active ? 'text-amber-400' : 'text-slate-400'}`} />
+                    <span>{item.label}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* AI Sales Coach Trigger */}
+        <div className="mt-4 pt-3 border-t border-zinc-800/60">
+          <button
+            onClick={() => runAICoachAnalysis()}
+            className="w-full relative group overflow-hidden rounded-xl p-3 bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900 border border-indigo-500/30 text-left hover:border-indigo-500/60 transition-all shadow-lg"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
+                <BrainCircuit className="w-4 h-4 animate-pulse" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-indigo-200 flex items-center gap-1">
+                  {t.aiCoach}
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                </p>
+                <p className="text-[10px] text-indigo-300/70">Tap for instant deal coaching</p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main OS View Container */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        
+        {/* Top Header Bar */}
+        <header className={`h-16 px-6 border-b ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]/80' : 'border-slate-200 bg-white/80'} backdrop-blur-md sticky top-0 z-20 flex items-center justify-between gap-4`}>
+          
+          {/* Global Search Bar */}
+          <button 
+            onClick={() => setIsSearchOpen(true)}
+            className={`flex-1 max-w-md flex items-center justify-between px-3.5 py-2 rounded-xl text-xs ${
+              theme === 'dark' ? 'bg-zinc-900 text-slate-400 border border-zinc-800' : 'bg-slate-100 text-slate-500 border border-slate-200'
+            } hover:border-slate-400 transition-all`}
+          >
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4 text-slate-400" />
+              <span>{t.searchPlaceholder}</span>
+            </div>
+            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded border border-slate-700">
+              /
+            </kbd>
+          </button>
+
+          {/* Language, Theme & User Header Options */}
+          <div className="flex items-center gap-2">
+            
+            {/* Quick Journal Button */}
+            <button
+              onClick={() => setIsJournalModalOpen(true)}
+              className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/20"
+            >
+              <BookMarked className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{t.journalEntry}</span>
+            </button>
+
+            {/* Language Switcher */}
+            <button
+              onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+              className={`p-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                theme === 'dark' ? 'hover:bg-zinc-800 text-slate-300' : 'hover:bg-slate-100 text-slate-700'
+              }`}
+            >
+              <Languages className="w-4 h-4 text-indigo-400" />
+              <span className="uppercase text-[11px]">{t.languageToggle}</span>
+            </button>
+
+            {/* Dark/Light Theme Toggle */}
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className={`p-2 rounded-lg transition-all ${
+                theme === 'dark' ? 'hover:bg-zinc-800 text-amber-400' : 'hover:bg-slate-100 text-indigo-600'
+              }`}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+            {/* Salesperson Profile Avatar */}
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-indigo-500 flex items-center justify-center text-slate-950 font-black text-xs ring-2 ring-amber-500/30">
+              OS
+            </div>
+          </div>
+        </header>
+
+        {/* Dynamic Main Workspace Modules */}
+        <div className="p-6 max-w-7xl w-full mx-auto space-y-6">
+          
+          {currentTab === 'dashboard' && (
+            <div className="space-y-6 animate-fadeIn">
+              
+              {/* Daily Sales Mindset Header */}
+              <div className="p-6 rounded-2xl bg-gradient-to-r from-zinc-900 via-indigo-950/40 to-zinc-900 border border-amber-500/20 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      DAILY MINDSET
+                    </span>
+                    <span className="text-xs text-slate-400">• Sales OS Pillar #1: Planning & Execution</span>
+                  </div>
+                  <h2 className="text-xl font-black text-slate-100">"You don't close sales by pitching; you close sales by understanding."</h2>
+                  <p className="text-xs text-slate-400">Top Priority Today: Complete discovery prep for TechCorp SLA deal.</p>
+                </div>
+
+                <button 
+                  onClick={() => setCurrentTab('focus')}
+                  className="px-4 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 shrink-0"
+                >
+                  <Crosshair className="w-4 h-4" />
+                  Enter Focus Mode
+                </button>
+              </div>
+
+              {/* Core Performance & Habits Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: t.deepWorkTime, val: '2h 45m', sub: 'Target: 4h / day', icon: Clock, color: 'text-amber-400' },
+                  { label: t.completedTasks, val: `${tasks.filter(t=>t.completed).length} / ${tasks.length}`, sub: '75% Focus Score', icon: CheckCircle2, color: 'text-emerald-400' },
+                  { label: 'Habit Consistency', val: '88%', sub: '12-day streak', icon: Repeat, color: 'text-cyan-400' },
+                  { label: t.monthlyTarget, val: '68%', sub: '$170k / $250k Goal', icon: Target, color: 'text-indigo-400' }
+                ].map((stat, i) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div key={i} className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-zinc-900/70 border-zinc-800' : 'bg-white border-slate-200'} space-y-1.5`}>
+                      <div className="flex items-center justify-between text-slate-400 text-xs">
+                        <span>{stat.label}</span>
+                        <Icon className={`w-4 h-4 ${stat.color}`} />
+                      </div>
+                      <div className="text-lg font-black">{stat.val}</div>
+                      <div className="text-[10px] text-slate-400">{stat.sub}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 2-Column Section: Top Priorities & AI Growth Insights */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Priorities List */}
+                <div className={`md:col-span-2 p-5 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900/70 border-zinc-800' : 'bg-white border-slate-200'} space-y-4`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Flame className="w-4 h-4 text-amber-500" />
+                      <h3 className="text-sm font-bold">{t.topPriorities}</h3>
+                    </div>
+                    <button onClick={() => setCurrentTab('planner')} className="text-xs text-amber-400 hover:underline flex items-center gap-1">
+                      Time-Block Schedule <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {tasks.map(tk => (
+                      <div key={tk.id} className={`p-3.5 rounded-xl border ${theme === 'dark' ? 'bg-zinc-800/40 border-zinc-700/50' : 'bg-slate-50 border-slate-200'} flex items-center justify-between gap-3`}>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setTasks(tasks.map(t => t.id === tk.id ? { ...t, completed: !t.completed } : t))}
+                            className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${tk.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950 font-bold' : 'border-slate-600'}`}
+                          >
+                            {tk.completed && <Check className="w-3.5 h-3.5" />}
+                          </button>
+                          <div>
+                            <p className={`text-xs font-semibold ${tk.completed ? 'line-through text-slate-500' : 'text-slate-200'}`}>{tk.title}</p>
+                            <span className="text-[10px] text-slate-400">{tk.type} • {tk.duration} mins</span>
+                          </div>
+                        </div>
+                        <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                          Q{tk.quadrant}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* AI Performance Growth Card */}
+                <div className={`p-5 rounded-2xl border ${theme === 'dark' ? 'bg-gradient-to-b from-indigo-950/30 to-zinc-900 border-indigo-500/20' : 'bg-white border-slate-200'} space-y-4`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-indigo-400">
+                      <Lightbulb className="w-4 h-4" />
+                      <h3 className="text-xs font-bold uppercase tracking-wider">AI Growth Insight</h3>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 text-xs">
+                    <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/40 space-y-1">
+                      <span className="text-[10px] font-bold text-amber-400">{t.biggestWeakness}</span>
+                      <p className="text-slate-300 text-[11px]">Talk-to-Listen ratio in discovery calls (currently 65% talk time).</p>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/40 space-y-1">
+                      <span className="text-[10px] font-bold text-emerald-400">{t.biggestOpportunity}</span>
+                      <p className="text-slate-300 text-[11px]">TechCorp ME cloud proposal ($45k) closing window this week.</p>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/40 space-y-1">
+                      <span className="text-[10px] font-bold text-indigo-400">{t.suggestedAction}</span>
+                      <p className="text-slate-300 text-[11px]">Practice SPIN Need-Payoff questions before afternoon calls.</p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {currentTab === 'planner' && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold">{t.planner}</h2>
+                  <p className="text-xs text-slate-400">Schedule your sales priorities with dedicated time-blocks</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Schedule Timeline */}
+                <div className={`md:col-span-2 p-5 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900/70 border-zinc-800' : 'bg-white border-slate-200'} space-y-4`}>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Time-Blocked Day Schedule</h3>
+                  
+                  <div className="space-y-3">
+                    {[
+                      { time: '08:30 - 09:00', title: 'Morning Sales OS Planning & Journal Review', tag: 'Planning', color: 'border-amber-500/30 bg-amber-500/10 text-amber-300' },
+                      { time: '09:00 - 10:30', title: 'Deep Work: SPIN Pitch Prep for TechCorp', tag: 'Deep Work', color: 'border-indigo-500/30 bg-indigo-500/10 text-indigo-300' },
+                      { time: '11:00 - 12:00', title: 'Discovery Call: Ahmad Al-Mansoor', tag: 'Call', color: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300' },
+                      { time: '01:30 - 02:30', title: 'Outbound Prospecting (10 Phone Debriefs)', tag: 'Prospecting', color: 'border-purple-500/30 bg-purple-500/10 text-purple-300' },
+                      { time: '04:00 - 04:30', title: 'Daily Reflection & Journal Entry', tag: 'Reflection', color: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' }
+                    ].map((slot, idx) => (
+                      <div key={idx} className={`p-3.5 rounded-xl border ${slot.color} flex items-center justify-between gap-4`}>
+                        <div className="flex items-center gap-4">
+                          <span className="text-xs font-mono font-bold w-28 shrink-0">{slot.time}</span>
+                          <div>
+                            <div className="text-xs font-bold text-slate-100">{slot.title}</div>
+                          </div>
+                        </div>
+                        <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-zinc-900/80">{slot.tag}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quick Add Planning Task */}
+                <div className={`p-5 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900/70 border-zinc-800' : 'bg-white border-slate-200'} space-y-4`}>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Add Time Block</h3>
+                  <div className="space-y-3 text-xs">
+                    <input
+                      type="text"
+                      placeholder="Task Title (e.g. Call Apex Holding)"
+                      className="w-full p-2.5 rounded-lg bg-zinc-800 border border-zinc-700 text-slate-100 focus:outline-none"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="02:00 PM"
+                        className="w-full p-2.5 rounded-lg bg-zinc-800 border border-zinc-700 text-slate-100 focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder="30 mins"
+                        className="w-full p-2.5 rounded-lg bg-zinc-800 border border-zinc-700 text-slate-100 focus:outline-none"
+                      />
+                    </div>
+                    <button className="w-full py-2 bg-indigo-600 font-bold rounded-lg text-white hover:bg-indigo-500 transition-all">
+                      Add to Day Schedule
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {currentTab === 'focus' && (
+            <div className="max-w-xl mx-auto p-8 rounded-3xl border border-amber-500/30 bg-zinc-900/90 shadow-2xl text-center space-y-6 animate-scaleUp">
+              <div className="flex items-center justify-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
+                <Crosshair className="w-4 h-4" />
+                Distraction-Free Focus Session
+              </div>
+
+              <div>
+                <h2 className="text-xl font-bold text-slate-100">{activeFocusTask?.title || "SPIN Pitch Discovery Preparation"}</h2>
+                <p className="text-xs text-slate-400 mt-1">Focus exclusively on this task. No interruptions.</p>
+              </div>
+
+              <div className="py-6">
+                <div className="text-6xl font-black font-mono tracking-wider text-amber-400">
+                  {formatTimer(focusTimer)}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={() => setIsTimerRunning(!isTimerRunning)}
+                  className={`px-6 py-3 rounded-2xl font-black text-xs flex items-center gap-2 transition-all shadow-lg ${
+                    isTimerRunning ? 'bg-rose-500 text-white' : 'bg-amber-500 text-slate-950 hover:bg-amber-400'
+                  }`}
+                >
+                  {isTimerRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  {isTimerRunning ? 'Pause Session' : 'Start Focus Clock'}
+                </button>
+
+                <button
+                  onClick={() => { setIsTimerRunning(false); setFocusTimer(25 * 60); }}
+                  className="p-3 rounded-2xl bg-zinc-800 text-slate-300 hover:bg-zinc-700"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {currentTab === 'journal' && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold">{t.journal}</h2>
+                  <p className="text-xs text-slate-400">Reflect daily on your wins, mistakes, and sales insights</p>
+                </div>
+                <button
+                  onClick={() => setIsJournalModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md"
+                >
+                  <Plus className="w-4 h-4" />
+                  Write Journal Entry
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {journalEntries.map(j => (
+                  <div key={j.id} className={`p-6 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'} space-y-4`}>
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                      <span className="text-xs font-mono font-bold text-amber-400">{j.date}</span>
+                      <div className="flex items-center gap-4 text-xs text-slate-400">
+                        <span>Energy: <strong className="text-amber-400">{j.energy}/5</strong></span>
+                        <span>Confidence: <strong className="text-indigo-400">{j.confidence}/5</strong></span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      <div className="p-3 rounded-xl bg-emerald-950/10 border border-emerald-500/20">
+                        <span className="font-bold text-emerald-400">{t.whatWentWell}</span>
+                        <p className="text-slate-300 mt-1">{j.whatWentWell}</p>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-rose-950/10 border border-rose-500/20">
+                        <span className="font-bold text-rose-400">{t.whatWentWrong}</span>
+                        <p className="text-slate-300 mt-1">{j.whatWentWrong}</p>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-indigo-950/10 border border-indigo-500/20">
+                        <span className="font-bold text-indigo-400">{t.whatILearned}</span>
+                        <p className="text-slate-300 mt-1">{j.whatILearned}</p>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-amber-950/10 border border-amber-500/20">
+                        <span className="font-bold text-amber-400">{t.whatToImprove}</span>
+                        <p className="text-slate-300 mt-1">{j.whatToImprove}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentTab === 'eisenhower' && (
+            <div className="space-y-4 animate-fadeIn">
+              <div>
+                <h2 className="text-lg font-bold">{t.eisenhower}</h2>
+                <p className="text-xs text-slate-400">Organize sales actions by Urgency & Importance</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { q: 1, title: 'Urgent & Important (Do First)', color: 'border-rose-500/30 bg-rose-950/10 text-rose-300' },
+                  { q: 2, title: 'Important Not Urgent (Schedule)', color: 'border-indigo-500/30 bg-indigo-950/10 text-indigo-300' },
+                  { q: 3, title: 'Urgent Not Important (Delegate)', color: 'border-amber-500/30 bg-amber-950/10 text-amber-300' },
+                  { q: 4, title: 'Neither (Eliminate)', color: 'border-slate-700/30 bg-slate-900/20 text-slate-400' }
+                ].map(quad => {
+                  const quadTasks = tasks.filter(tk => tk.quadrant === quad.q);
+                  return (
+                    <div key={quad.q} className={`p-4 rounded-2xl border ${quad.color} min-h-[220px] flex flex-col justify-between space-y-3`}>
+                      <div>
+                        <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
+                          <h3 className="text-xs font-bold uppercase tracking-wider">{quad.title}</h3>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 font-bold">{quadTasks.length}</span>
+                        </div>
+
+                        <div className="space-y-2">
+                          {quadTasks.map(tk => (
+                            <div key={tk.id} className="p-3 rounded-xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-between text-xs">
+                              <span className="text-slate-200">{tk.title}</span>
+                              <div className="flex gap-1">
+                                {[1, 2, 3, 4].map(qNum => (
+                                  <button
+                                    key={qNum}
+                                    onClick={() => setTasks(tasks.map(t => t.id === tk.id ? { ...t, quadrant: qNum } : t))}
+                                    className={`px-1.5 py-0.5 text-[9px] rounded font-mono ${tk.quadrant === qNum ? 'bg-amber-500 text-slate-950 font-black' : 'bg-zinc-800 text-slate-400'}`}
+                                  >
+                                    Q{qNum}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {currentTab === 'habits' && (
+            <div className="space-y-6 animate-fadeIn">
+              <div>
+                <h2 className="text-lg font-bold">{t.habits}</h2>
+                <p className="text-xs text-slate-400">Build high-performing daily sales rituals</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {habits.map(h => (
+                  <div key={h.id} className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'} flex items-center justify-between`}>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">{h.category}</span>
+                      <h3 className="text-xs font-bold text-slate-100">{h.title}</h3>
+                      <div className="text-[10px] text-slate-400 flex items-center gap-2">
+                        <span>Streak: <strong className="text-amber-400">{h.streak} days</strong></span>
+                        <span>• Score: {h.score}%</span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setHabits(habits.map(item => item.id === h.id ? { ...item, completedToday: !item.completedToday, streak: !item.completedToday ? item.streak + 1 : item.streak - 1 } : item))}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                        h.completedToday ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-zinc-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Check className="w-4 h-4" />
+                      {h.completedToday ? 'Done Today' : 'Mark Done'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentTab === 'objections' && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold">{t.objections}</h2>
+                  <p className="text-xs text-slate-400">Personal playbook of customer pushbacks and winning responses</p>
+                </div>
+                <button
+                  onClick={() => setIsObjectionModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600 text-white font-bold text-xs flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  {t.addObjection}
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {objections.map(obj => (
+                  <div key={obj.id} className={`p-5 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'} space-y-3`}>
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-400">
+                        {obj.category}
+                      </span>
+                      <span className="text-xs font-bold text-emerald-400">Success Rate: {obj.successRate}%</span>
+                    </div>
+
+                    <h3 className="text-sm font-bold text-slate-100">"{obj.objection}"</h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-1">
+                      <div className="p-3 rounded-xl bg-zinc-800/60 border border-zinc-700/40">
+                        <span className="font-bold text-amber-400">Best Response (SPIN/Value Frame):</span>
+                        <p className="text-slate-300 mt-1">{obj.bestResponse}</p>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-zinc-800/60 border border-zinc-700/40">
+                        <span className="font-bold text-indigo-400">Alternative Response:</span>
+                        <p className="text-slate-300 mt-1">{obj.alternativeResponse}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentTab === 'callReviews' && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold">{t.callReviews}</h2>
+                  <p className="text-xs text-slate-400">Deconstruct calls to find mistakes and improve closing skills</p>
+                </div>
+                <button
+                  onClick={() => setIsCallReviewModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  {t.logCall}
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {callReviews.map(cr => (
+                  <div key={cr.id} className={`p-5 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'} space-y-4`}>
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-100">{cr.customer} - {cr.company}</h3>
+                        <span className="text-[10px] text-slate-400">{cr.date}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                      <div className="p-3 rounded-xl bg-zinc-800/40 border border-zinc-700/40">
+                        <span className="font-bold text-amber-400">Customer Pain Points:</span>
+                        <p className="text-slate-300 mt-1">{cr.painPoints}</p>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-zinc-800/40 border border-zinc-700/40">
+                        <span className="font-bold text-rose-400">Mistake Made:</span>
+                        <p className="text-slate-300 mt-1">{cr.mistake}</p>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-zinc-800/40 border border-zinc-700/40">
+                        <span className="font-bold text-emerald-400">Improvement Strategy:</span>
+                        <p className="text-slate-300 mt-1">{cr.improvement}</p>
+                      </div>
+                    </div>
+
+                    {/* AI Feedback Banner */}
+                    <div className="p-3 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs text-indigo-200 flex items-start gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-amber-300">AI Coach Advice: </span>
+                        {cr.aiFeedback}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentTab === 'learning' && (
+            <div className="space-y-6 animate-fadeIn">
+              <div>
+                <h2 className="text-lg font-bold">{t.learning}</h2>
+                <p className="text-xs text-slate-400">Track books, courses, and podcasts to sharpen your sales edge</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {learningList.map(item => (
+                  <div key={item.id} className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'} space-y-3`}>
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/20 text-amber-400">{item.type}</span>
+                      <span className="text-[10px] text-slate-400">{item.status}</span>
+                    </div>
+
+                    <h3 className="text-xs font-bold text-slate-100">{item.title}</h3>
+                    <p className="text-[10px] text-slate-400">By {item.author}</p>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[10px] text-slate-400">
+                        <span>Progress</span>
+                        <span>{item.progress}%</span>
+                      </div>
+                      <div className="w-full bg-zinc-800 rounded-full h-1.5">
+                        <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${item.progress}%` }}></div>
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-zinc-800/50 text-[11px] text-slate-300 border border-zinc-700/40">
+                      <strong>Key Lesson: </strong> {item.keyLesson}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentTab === 'goals' && (
+            <div className="space-y-6 animate-fadeIn">
+              <div>
+                <h2 className="text-lg font-bold">{t.goals}</h2>
+                <p className="text-xs text-slate-400">Align daily actions with quarter and annual targets</p>
+              </div>
+
+              <div className="space-y-4">
+                {goals.map(g => (
+                  <div key={g.id} className={`p-5 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'} space-y-3`}>
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-400">
+                        {g.level} Goal
+                      </span>
+                      <span className="text-xs font-bold text-amber-400">Deadline: {g.deadline}</span>
+                    </div>
+
+                    <h3 className="text-sm font-bold text-slate-100">{g.title}</h3>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs text-slate-400">
+                        <span>Target: {g.target}</span>
+                        <span>{g.progress}% Complete</span>
+                      </div>
+                      <div className="w-full bg-zinc-800 rounded-full h-2">
+                        <div className="bg-gradient-to-r from-amber-500 to-indigo-500 h-2 rounded-full" style={{ width: `${g.progress}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentTab === 'rejections' && (
+            <div className="space-y-6 animate-fadeIn">
+              <div>
+                <h2 className="text-lg font-bold">{t.rejections}</h2>
+                <p className="text-xs text-slate-400">Analyze lost deal patterns to prevent future objections</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={`p-5 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'} space-y-4`}>
+                  <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Top Lost Deal Reasons</h3>
+                  <div className="h-60 w-full flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: 'Price / Budget', value: 45, fill: '#ef4444' },
+                            { name: 'Competitor SLA', value: 25, fill: '#f59e0b' },
+                            { name: 'Timing / Delays', value: 20, fill: '#3b82f6' },
+                            { name: 'No Response', value: 10, fill: '#8b5cf6' }
+                          ]}
+                          dataKey="value"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={70}
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        />
+                        <RechartsTooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className={`p-5 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'} space-y-3 text-xs`}>
+                  <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Pattern Fix Recommendations</h3>
+                  <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/40">
+                    <strong>1. Price Pushback (45%): </strong> Introduce ROI math before delivering formal quotes.
+                  </div>
+                  <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/40">
+                    <strong>2. Competitor SLA (25%): </strong> Highlight local KSA datacenter support in discovery.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentTab === 'crm' && (
+            <div className="space-y-4 animate-fadeIn">
+              <div>
+                <h2 className="text-lg font-bold">{t.crm}</h2>
+                <p className="text-xs text-slate-400">Lightweight opportunity pipeline supporting your daily execution</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { name: 'Enterprise Cloud Migration', company: 'TechCorp ME', val: '$45,000', stage: 'Proposal' },
+                  { name: 'Annual Software License', company: 'Global Solutions', val: '$18,000', stage: 'Negotiation' },
+                  { name: 'CRM Implementation', company: 'Apex Holding', val: '$25,000', stage: 'Discovery' }
+                ].map((deal, i) => (
+                  <div key={i} className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'} space-y-2`}>
+                    <div className="text-xs font-bold text-slate-100">{deal.name}</div>
+                    <div className="text-[10px] text-slate-400">{deal.company}</div>
+                    <div className="flex justify-between items-center pt-2 border-t border-zinc-800 text-xs">
+                      <span className="font-black text-amber-400">{deal.val}</span>
+                      <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px] font-bold">{deal.stage}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(currentTab === 'analytics' || currentTab === 'reviews' || currentTab === 'settings') && (
+            <div className="p-8 text-center border border-dashed border-zinc-800 rounded-2xl space-y-3">
+              <Sparkles className="w-8 h-8 text-amber-400 mx-auto animate-bounce" />
+              <h3 className="text-base font-bold text-slate-200">Module Active & Localized</h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                All metrics for {currentTab.toUpperCase()} are optimized for personal sales OS performance tracking.
+              </p>
+            </div>
+          )}
+
+        </div>
+      </main>
+
+      {/* Global Search Modal */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center pt-20 px-4">
+          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-xl rounded-2xl shadow-2xl p-4 space-y-4">
+            <div className="flex items-center gap-3 border-b border-zinc-800 pb-3">
+              <Search className="w-5 h-5 text-amber-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder={t.searchPlaceholder}
+                className="w-full bg-transparent text-sm text-slate-100 focus:outline-none"
+                autoFocus
+              />
+              <button onClick={() => setIsSearchOpen(false)} className="p-1 text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="max-h-80 overflow-y-auto space-y-3 text-xs">
+              {searchResults.objections.length > 0 && (
+                <div>
+                  <span className="text-[10px] font-bold text-amber-400 uppercase">Objections</span>
+                  {searchResults.objections.map(o => (
+                    <div key={o.id} className="p-2 hover:bg-zinc-800 rounded text-slate-200">
+                      "{o.objection}"
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Sales Coach Drawer */}
+      {isAICoachOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end">
+          <div className="w-full max-w-md bg-zinc-900 border-l border-zinc-800 h-full p-6 flex flex-col justify-between space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <div className="flex items-center gap-2">
+                  <Bot className="w-5 h-5 text-indigo-400" />
+                  <h3 className="font-bold text-slate-100">{t.aiCoach}</h3>
+                </div>
+                <button onClick={() => setIsAICoachOpen(false)} className="p-1 text-slate-400 hover:text-white">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {isAiLoading ? (
+                <div className="flex items-center justify-center py-12 text-xs text-amber-400 animate-pulse gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  <span>{t.aiAnalyzing}</span>
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs text-slate-200 leading-relaxed whitespace-pre-line">
+                  {aiCoachResponse}
+                </div>
+              )}
+            </div>
+
+            <button 
+              onClick={() => setIsAICoachOpen(false)}
+              className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all"
+            >
+              Apply Coaching Strategy
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Journal Entry Modal */}
+      {isJournalModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-lg rounded-2xl p-6 space-y-4">
+            <h3 className="text-sm font-bold text-slate-100">{t.journalEntry}</h3>
+            
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-400 mb-1">{t.whatWentWell}</label>
+                <textarea
+                  value={newJournal.whatWentWell}
+                  onChange={e => setNewJournal({ ...newJournal, whatWentWell: e.target.value })}
+                  className="w-full p-2.5 rounded-lg bg-zinc-800 border border-zinc-700 text-slate-100 focus:outline-none"
+                  rows={2}
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">{t.whatILearned}</label>
+                <textarea
+                  value={newJournal.whatILearned}
+                  onChange={e => setNewJournal({ ...newJournal, whatILearned: e.target.value })}
+                  className="w-full p-2.5 rounded-lg bg-zinc-800 border border-zinc-700 text-slate-100 focus:outline-none"
+                  rows={2}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button onClick={() => setIsJournalModalOpen(false)} className="px-4 py-2 rounded-lg bg-zinc-800 text-slate-300">
+                  {t.cancel}
+                </button>
+                <button 
+                  onClick={() => {
+                    if (newJournal.whatWentWell) {
+                      setJournalEntries([{ id: 'j_' + Date.now(), date: new Date().toISOString().split('T')[0], ...newJournal }, ...journalEntries]);
+                      setIsJournalModalOpen(false);
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold"
+                >
+                  {t.save}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Action Button */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          onClick={() => setIsFABOpen(!isFABOpen)}
+          className="w-12 h-12 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-2xl hover:bg-amber-400 transition-all"
+        >
+          <Plus className={`w-6 h-6 transition-transform ${isFABOpen ? 'rotate-45' : ''}`} />
+        </button>
+
+        {isFABOpen && (
+          <div className="absolute bottom-14 right-0 bg-zinc-900 border border-zinc-800 rounded-xl p-2 shadow-2xl space-y-1 w-48 text-xs">
+            <button onClick={() => { setIsFABOpen(false); setIsJournalModalOpen(true); }} className="w-full text-left px-3 py-2 hover:bg-zinc-800 rounded text-slate-200">
+              ✍️ {t.journalEntry}
+            </button>
+            <button onClick={() => { setIsFABOpen(false); setIsCallReviewModalOpen(true); }} className="w-full text-left px-3 py-2 hover:bg-zinc-800 rounded text-slate-200">
+              📞 {t.logCall}
+            </button>
+            <button onClick={() => { setIsFABOpen(false); setIsObjectionModalOpen(true); }} className="w-full text-left px-3 py-2 hover:bg-zinc-800 rounded text-slate-200">
+              🛡️ {t.addObjection}
+            </button>
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}
