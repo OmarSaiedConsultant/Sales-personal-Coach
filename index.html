@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales OS - Personal Sales Operating System</title>
-  
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -14,7 +14,6 @@
         extend: {
           colors: {
             brand: {
-              50: '#fffbebe',
               400: '#fbbf24',
               500: '#f59e0b',
               600: '#d97706',
@@ -25,21 +24,15 @@
     }
   </script>
 
-  <!-- React 18 & ReactDOM CDN -->
+  <!-- React 18 & ReactDOM UMD CDNs -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 
-  <!-- Prop-Types (Dependency for Recharts) -->
-  <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
-
-  <!-- Recharts CDN -->
-  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
-
-  <!-- Babel Standalone (JSX Compiler in Browser) -->
+  <!-- Babel Standalone (Compiles JSX directly in the browser) -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+  <!-- Custom Styles and Animation Keyframes -->
   <style>
-    /* Custom Scrollbar Styling */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -68,9 +61,7 @@
 
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
-    const { ResponsiveContainer, PieChart, Pie, Tooltip: RechartsTooltip } = window.Recharts || {};
 
-    // Custom Lightweight SVG Icon Component
     const Icon = ({ name, className = "w-4 h-4" }) => {
       const icons = {
         compass: <path d="m16.24 7.76-1.8 4.38 4.38 1.8-1.8-4.38ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-2.24-5.76 1.8-4.38-4.38-1.8 1.8 4.38Z"/>,
@@ -273,7 +264,7 @@
     ];
 
     async function callGeminiAPI(prompt, systemInstruction = "") {
-      const apiKey = ""; // API key can be inserted here or injected
+      const apiKey = ""; // API key injection runtime
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
       
       const payload = {
