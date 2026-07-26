@@ -60,9 +60,9 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useMemo, useRef } = React;
+    const { useState, useEffect, useMemo } = React;
 
-    const Icon = ({ name, className = "w-4 h-4" }) => {
+    const Icon = ({ name, className = "w-4 h-4", flip = false }) => {
       const icons = {
         compass: <path d="m16.24 7.76-1.8 4.38 4.38 1.8-1.8-4.38ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-2.24-5.76 1.8-4.38-4.38-1.8 1.8 4.38Z"/>,
         dashboard: <path d="M4 4h6v8H4zm10 0h6v4h-6zm0 6h6v10h-6zM4 14h6v6H4z"/>,
@@ -109,6 +109,7 @@
           strokeLinecap="round" 
           strokeLinejoin="round" 
           className={className}
+          style={flip ? { transform: 'scaleX(-1)' } : undefined}
         >
           {icons[name] || <circle cx="12" cy="12" r="10" />}
         </svg>
@@ -135,7 +136,7 @@
         reviews: "Review System",
         crm: "Light CRM (Pipeline)",
         settings: "Settings",
-        
+
         topPriorities: "Today's Top 3 Priorities",
         todayObjective: "Daily Sales Objective",
         motivationQuote: "Daily Sales Mindset",
@@ -145,7 +146,7 @@
         biggestWeakness: "Weekly Area for Growth",
         biggestOpportunity: "Today's Hot Opportunity",
         suggestedAction: "AI Suggested Focus Action",
-        
+
         quickAction: "Quick Log / Action",
         logCall: "Review Call",
         journalEntry: "Daily Journal Entry",
@@ -153,17 +154,42 @@
         addObjection: "Add Objection Tactic",
         aiCoach: "AI Sales Performance Coach",
         aiAnalyzing: "Analyzing your sales activity with Gemini AI...",
-        
+        aiCoachSub: "Tap for instant deal coaching",
+        applyCoaching: "Apply Coaching Strategy",
+
         whatWentWell: "What went well today?",
         whatWentWrong: "What went wrong or was lost?",
         whatILearned: "What key insight did I learn?",
         whatToImprove: "What will I improve tomorrow?",
-        
+
         searchPlaceholder: "Search goals, objections, journal, learning... (Press '/')",
+        noSearchResults: "No matches found",
+        searchHint: "Start typing to search across your data",
         languageToggle: "العربية",
         save: "Save Entry",
         cancel: "Cancel",
-        close: "Close"
+        close: "Close",
+
+        enterFocusMode: "Enter Focus Mode",
+        distractionFreeSession: "Distraction-Free Focus Session",
+        focusSessionTitle: "Deep Work Session",
+        focusSessionSub: "Focus exclusively on this task. No interruptions.",
+        startFocusClock: "Start Focus Clock",
+        pauseSession: "Pause Session",
+        sessionComplete: "Session complete! Great work.",
+        habitConsistency: "Habit Consistency",
+        writeJournalEntry: "Write Journal Entry",
+        journalSub: "Reflect daily on your wins, mistakes, and sales insights",
+        moduleActive: "Module Active",
+        moduleActiveDesc: "Personalized sales performance OS interface loaded and ready for daily operations.",
+        pillarLabel: "Sales OS Pillar #1: Planning & Execution",
+        statDeepWorkSub: "Target: 4h / day",
+        statCompletedSub: "Focus Score",
+        statHabitSub: "day streak",
+        statMonthlySub: "of Goal",
+        timeBlockSchedule: "Time-Block Schedule",
+        energy: "Energy",
+        confidence: "Confidence"
       },
       ar: {
         appName: "Sales OS",
@@ -184,7 +210,7 @@
         reviews: "نظام المراجعة الدورية",
         crm: "إدارة العملاء المبسطة",
         settings: "الإعدادات",
-        
+
         topPriorities: "أهم 3 أهداف اليوم",
         todayObjective: "الهدف اليومي للمبيعات",
         motivationQuote: "عقلية اليوم للمبيعات",
@@ -194,7 +220,7 @@
         biggestWeakness: "نقطة التطوير الأسبوعية",
         biggestOpportunity: "أهم فرصة بيعية اليوم",
         suggestedAction: "إجراء اليوم المقترح بالذكاء الاصطناعي",
-        
+
         quickAction: "إجراء سريع",
         logCall: "تسجيل مراجعة مكالمة",
         journalEntry: "تدوين يومية المبيعات",
@@ -202,17 +228,42 @@
         addObjection: "إضافة اعتراض وحله",
         aiCoach: "الموجه الذكي للبيع الشخصي",
         aiAnalyzing: "جاري تحليل أدائك البيعي عبر Gemini AI...",
-        
+        aiCoachSub: "اضغط للحصول على تدريب فوري للصفقة",
+        applyCoaching: "تطبيق استراتيجية التدريب",
+
         whatWentWell: "ما الذي نجحت فيه اليوم؟",
         whatWentWrong: "ما الذي لم يمر بشكل جيد؟",
         whatILearned: "ما هي الفكرة الرئيسية التي تعلمتها؟",
         whatToImprove: "ما الذي سأتحسن فيه غداً؟",
-        
+
         searchPlaceholder: "بحث شامل في الأهداف، الاعتراضات، الملاحظات والعملاء... (اضغط '/')",
+        noSearchResults: "لا توجد نتائج مطابقة",
+        searchHint: "ابدأ الكتابة للبحث في بياناتك",
         languageToggle: "English",
         save: "حفظ البيانات",
         cancel: "إلغاء",
-        close: "إغلاق"
+        close: "إغلاق",
+
+        enterFocusMode: "الدخول إلى وضع التركيز",
+        distractionFreeSession: "جلسة تركيز بدون مشتتات",
+        focusSessionTitle: "جلسة عمل عميق",
+        focusSessionSub: "ركز فقط على هذه المهمة. بدون مقاطعات.",
+        startFocusClock: "ابدأ ساعة التركيز",
+        pauseSession: "إيقاف الجلسة مؤقتاً",
+        sessionComplete: "انتهت الجلسة! عمل رائع.",
+        habitConsistency: "ثبات العادات",
+        writeJournalEntry: "تدوين ملاحظة جديدة",
+        journalSub: "تأمل يومياً في إنجازاتك وأخطائك ورؤاك البيعية",
+        moduleActive: "الوحدة نشطة",
+        moduleActiveDesc: "واجهة نظام تشغيل المبيعات الشخصي جاهزة للعمليات اليومية.",
+        pillarLabel: "ركيزة Sales OS رقم 1: التخطيط والتنفيذ",
+        statDeepWorkSub: "الهدف: 4 ساعات / يوم",
+        statCompletedSub: "درجة التركيز",
+        statHabitSub: "يوم متتالي",
+        statMonthlySub: "من الهدف",
+        timeBlockSchedule: "جدول تقسيم الوقت",
+        energy: "الطاقة",
+        confidence: "الثقة"
       }
     };
 
@@ -263,10 +314,16 @@
       { id: 't4', title: 'Clean up outdated contact phone numbers in CRM', type: 'Organization', quadrant: 4, duration: 10, completed: false }
     ];
 
+    // NOTE: apiKey is intentionally empty — plug in a real Gemini API key at runtime
+    // (e.g. injected by your backend) for the AI Coach to return live responses.
+    // Until then this safely falls back to a static coaching tip below.
     async function callGeminiAPI(prompt, systemInstruction = "") {
-      const apiKey = ""; // API key injection runtime
+      const apiKey = "";
+      if (!apiKey) {
+        return "AI Coach Recommendation: Focus on qualifying buyer pain drivers before discussing pricing on your next call.";
+      }
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-      
+
       const payload = {
         contents: [{ parts: [{ text: prompt }] }],
         systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined
@@ -285,11 +342,13 @@
       }
     }
 
+    const EMPTY_JOURNAL_FORM = { whatWentWell: '', whatWentWrong: '', whatILearned: '', whatToImprove: '', energy: 4, confidence: 5 };
+
     function App() {
       const [lang, setLang] = useState('en');
       const [theme, setTheme] = useState('dark');
       const [currentTab, setCurrentTab] = useState('dashboard');
-      
+
       const [habits, setHabits] = useState(INITIAL_HABITS);
       const [objections, setObjections] = useState(INITIAL_OBJECTIONS);
       const [journalEntries, setJournalEntries] = useState(INITIAL_JOURNAL);
@@ -307,12 +366,13 @@
       const [isFABOpen, setIsFABOpen] = useState(false);
       const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
 
-      const [newJournal, setNewJournal] = useState({ whatWentWell: '', whatILearned: '', energy: 4, confidence: 5 });
+      const [newJournal, setNewJournal] = useState(EMPTY_JOURNAL_FORM);
 
       const t = TRANSLATIONS[lang];
+      const isRTL = lang === 'ar';
 
       useEffect(() => {
-        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
       }, [lang]);
 
       useEffect(() => {
@@ -330,6 +390,10 @@
           if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
             e.preventDefault();
             setIsSearchOpen(true);
+          }
+          if (e.key === 'Escape') {
+            setIsSearchOpen(false);
+            setIsFABOpen(false);
           }
         };
         window.addEventListener('keydown', handleKeyDown);
@@ -350,11 +414,46 @@
         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
       };
 
+      const addJournalEntry = () => {
+        if (!newJournal.whatWentWell.trim() && !newJournal.whatILearned.trim()) return;
+        const entry = {
+          id: 'j' + Date.now(),
+          date: new Date().toISOString().split('T')[0],
+          ...newJournal
+        };
+        setJournalEntries([entry, ...journalEntries]);
+        setNewJournal(EMPTY_JOURNAL_FORM);
+        setIsJournalModalOpen(false);
+      };
+
+      // Searchable index built from live app data so the search bar actually works
+      const searchableItems = useMemo(() => {
+        const items = [];
+        habits.forEach(h => items.push({ id: 'habit-' + h.id, title: h.title, type: t.habits, tab: 'habits' }));
+        objections.forEach(o => items.push({ id: 'obj-' + o.id, title: o.objection, type: t.objections, tab: 'objections' }));
+        journalEntries.forEach(j => items.push({ id: 'jrn-' + j.id, title: j.whatWentWell || j.whatILearned, type: t.journal, tab: 'journal' }));
+        tasks.forEach(tk => items.push({ id: 'task-' + tk.id, title: tk.title, type: t.dashboard, tab: 'dashboard' }));
+        return items;
+      }, [habits, objections, journalEntries, tasks, t]);
+
+      const filteredSearchResults = useMemo(() => {
+        if (!searchQuery.trim()) return [];
+        const q = searchQuery.toLowerCase();
+        return searchableItems.filter(i => i.title.toLowerCase().includes(q));
+      }, [searchQuery, searchableItems]);
+
+      const goToTab = (tab) => {
+        setCurrentTab(tab);
+        setIsSearchOpen(false);
+        setIsFABOpen(false);
+        setSearchQuery('');
+      };
+
       return (
         <div className={`min-h-screen font-sans ${theme === 'dark' ? 'bg-[#09090b] text-slate-100' : 'bg-slate-50 text-slate-800'} transition-colors duration-200 flex flex-col md:flex-row`}>
-          
+
           {}
-          <aside className={`w-full md:w-64 border-b md:border-b-0 md:border-r ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]' : 'border-slate-200 bg-white'} flex flex-col justify-between shrink-0 p-4`}>
+          <aside className={`w-full md:w-64 border-b md:border-b-0 ${isRTL ? 'md:border-l' : 'md:border-r'} ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]' : 'border-slate-200 bg-white'} flex flex-col justify-between shrink-0 p-4`}>
             <div>
               <div className="flex items-center gap-3 mb-6 px-2">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-lg">
@@ -420,7 +519,7 @@
                       {t.aiCoach}
                       <Icon name="sparkles" className="w-3 h-3 text-amber-400" />
                     </p>
-                    <p className="text-[10px] text-indigo-300/70">Tap for instant deal coaching</p>
+                    <p className="text-[10px] text-indigo-300/70">{t.aiCoachSub}</p>
                   </div>
                 </div>
               </button>
@@ -429,7 +528,7 @@
 
           {}
           <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-            
+
             <header className={`h-16 px-6 border-b ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]/80' : 'border-slate-200 bg-white/80'} backdrop-blur-md sticky top-0 z-20 flex items-center justify-between gap-4`}>
               <button 
                 onClick={() => setIsSearchOpen(true)}
@@ -476,17 +575,17 @@
 
             {}
             <div className="p-6 max-w-7xl w-full mx-auto space-y-6">
-              
+
               {currentTab === 'dashboard' && (
                 <div className="space-y-6 animate-fadeIn">
-                  
+
                   <div className="p-6 rounded-2xl bg-gradient-to-r from-zinc-900 via-indigo-950/40 to-zinc-900 border border-amber-500/20 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
                           DAILY MINDSET
                         </span>
-                        <span className="text-xs text-slate-400">• Sales OS Pillar #1: Planning & Execution</span>
+                        <span className="text-xs text-slate-400">• {t.pillarLabel}</span>
                       </div>
                       <h2 className="text-xl font-black text-slate-100">"You don't close sales by pitching; you close sales by understanding."</h2>
                       <p className="text-xs text-slate-400">Top Priority Today: Complete discovery prep for TechCorp SLA deal.</p>
@@ -497,16 +596,16 @@
                       className="px-4 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 hover:bg-amber-400 transition-all shrink-0"
                     >
                       <Icon name="crosshair" className="w-4 h-4" />
-                      Enter Focus Mode
+                      {t.enterFocusMode}
                     </button>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
-                      { label: t.deepWorkTime, val: '2h 45m', sub: 'Target: 4h / day', icon: 'clock', color: 'text-amber-400' },
-                      { label: t.completedTasks, val: `${tasks.filter(t=>t.completed).length} / ${tasks.length}`, sub: '75% Focus Score', icon: 'checkCircle', color: 'text-emerald-400' },
-                      { label: 'Habit Consistency', val: '88%', sub: '12-day streak', icon: 'repeat', color: 'text-cyan-400' },
-                      { label: t.monthlyTarget, val: '68%', sub: '$170k / $250k Goal', icon: 'target', color: 'text-indigo-400' }
+                      { label: t.deepWorkTime, val: '2h 45m', sub: t.statDeepWorkSub, icon: 'clock', color: 'text-amber-400' },
+                      { label: t.completedTasks, val: `${tasks.filter(tk=>tk.completed).length} / ${tasks.length}`, sub: `75% ${t.statCompletedSub}`, icon: 'checkCircle', color: 'text-emerald-400' },
+                      { label: t.habitConsistency, val: '88%', sub: `12 ${t.statHabitSub}`, icon: 'repeat', color: 'text-cyan-400' },
+                      { label: t.monthlyTarget, val: '68%', sub: `$170k / $250k ${t.statMonthlySub}`, icon: 'target', color: 'text-indigo-400' }
                     ].map((stat, i) => (
                       <div key={i} className="p-4 rounded-xl border bg-zinc-900/70 border-zinc-800 space-y-1.5">
                         <div className="flex items-center justify-between text-slate-400 text-xs">
@@ -527,7 +626,7 @@
                           <h3 className="text-sm font-bold">{t.topPriorities}</h3>
                         </div>
                         <button onClick={() => setCurrentTab('planner')} className="text-xs text-amber-400 hover:underline flex items-center gap-1">
-                          Time-Block Schedule <Icon name="chevronRight" className="w-3 h-3" />
+                          {t.timeBlockSchedule} <Icon name="chevronRight" flip={isRTL} className="w-3 h-3" />
                         </button>
                       </div>
 
@@ -536,7 +635,7 @@
                           <div key={tk.id} className="p-3.5 rounded-xl border bg-zinc-800/40 border-zinc-700/50 flex items-center justify-between gap-3">
                             <div className="flex items-center gap-3">
                               <button
-                                onClick={() => setTasks(tasks.map(t => t.id === tk.id ? { ...t, completed: !t.completed } : t))}
+                                onClick={() => setTasks(tasks.map(tk2 => tk2.id === tk.id ? { ...tk2, completed: !tk2.completed } : tk2))}
                                 className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${tk.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950 font-bold' : 'border-slate-600'}`}
                               >
                                 {tk.completed && <Icon name="check" className="w-3.5 h-3.5" />}
@@ -581,29 +680,33 @@
                 <div className="max-w-xl mx-auto p-8 rounded-3xl border border-amber-500/30 bg-zinc-900/90 shadow-2xl text-center space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
                     <Icon name="crosshair" className="w-4 h-4" />
-                    Distraction-Free Focus Session
+                    {t.distractionFreeSession}
                   </div>
 
                   <div>
-                    <h2 className="text-xl font-bold text-slate-100">SPIN Pitch Discovery Preparation</h2>
-                    <p className="text-xs text-slate-400 mt-1">Focus exclusively on this task. No interruptions.</p>
+                    <h2 className="text-xl font-bold text-slate-100">{t.focusSessionTitle}</h2>
+                    <p className="text-xs text-slate-400 mt-1">{t.focusSessionSub}</p>
                   </div>
 
                   <div className="py-6">
                     <div className="text-6xl font-black font-mono tracking-wider text-amber-400">
                       {formatTimer(focusTimer)}
                     </div>
+                    {focusTimer === 0 && (
+                      <p className="text-xs font-semibold text-emerald-400 mt-3">{t.sessionComplete}</p>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-center gap-3">
                     <button
+                      disabled={focusTimer === 0}
                       onClick={() => setIsTimerRunning(!isTimerRunning)}
-                      className={`px-6 py-3 rounded-2xl font-black text-xs flex items-center gap-2 transition-all shadow-lg ${
+                      className={`px-6 py-3 rounded-2xl font-black text-xs flex items-center gap-2 transition-all shadow-lg disabled:opacity-40 disabled:cursor-not-allowed ${
                         isTimerRunning ? 'bg-rose-500 text-white' : 'bg-amber-500 text-slate-950 hover:bg-amber-400'
                       }`}
                     >
                       <Icon name={isTimerRunning ? "pause" : "play"} className="w-4 h-4" />
-                      {isTimerRunning ? 'Pause Session' : 'Start Focus Clock'}
+                      {isTimerRunning ? t.pauseSession : t.startFocusClock}
                     </button>
 
                     <button
@@ -622,14 +725,14 @@
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-lg font-bold">{t.journal}</h2>
-                      <p className="text-xs text-slate-400">Reflect daily on your wins, mistakes, and sales insights</p>
+                      <p className="text-xs text-slate-400">{t.journalSub}</p>
                     </div>
                     <button
                       onClick={() => setIsJournalModalOpen(true)}
                       className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md"
                     >
                       <Icon name="plus" className="w-4 h-4" />
-                      Write Journal Entry
+                      {t.writeJournalEntry}
                     </button>
                   </div>
 
@@ -639,8 +742,8 @@
                         <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                           <span className="text-xs font-mono font-bold text-amber-400">{j.date}</span>
                           <div className="flex items-center gap-4 text-xs text-slate-400">
-                            <span>Energy: <strong className="text-amber-400">{j.energy}/5</strong></span>
-                            <span>Confidence: <strong className="text-indigo-400">{j.confidence}/5</strong></span>
+                            <span>{t.energy}: <strong className="text-amber-400">{j.energy}/5</strong></span>
+                            <span>{t.confidence}: <strong className="text-indigo-400">{j.confidence}/5</strong></span>
                           </div>
                         </div>
 
@@ -665,15 +768,136 @@
               {['planner', 'eisenhower', 'habits', 'objections', 'callReviews', 'learning', 'goals', 'analytics', 'rejections', 'crm', 'settings'].includes(currentTab) && (
                 <div className="p-8 text-center border border-dashed border-zinc-800 rounded-2xl space-y-3 animate-fadeIn">
                   <Icon name="sparkles" className="w-8 h-8 text-amber-400 mx-auto" />
-                  <h3 className="text-base font-bold text-slate-200">Module Active: {currentTab.toUpperCase()}</h3>
+                  <h3 className="text-base font-bold text-slate-200">{t.moduleActive}: {t[currentTab] || currentTab.toUpperCase()}</h3>
                   <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                    Personalized sales performance OS interface loaded and ready for daily operations.
+                    {t.moduleActiveDesc}
                   </p>
                 </div>
               )}
 
             </div>
           </main>
+
+          {}
+          {isSearchOpen && (
+            <div
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-24 px-4"
+              onClick={() => setIsSearchOpen(false)}
+            >
+              <div
+                className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-fadeIn"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
+                  <Icon name="search" className="w-4 h-4 text-slate-400 shrink-0" />
+                  <input
+                    autoFocus
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t.searchPlaceholder}
+                    className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-500"
+                  />
+                  <button onClick={() => setIsSearchOpen(false)} className="p-1 text-slate-400 hover:text-white">
+                    <Icon name="x" className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="max-h-80 overflow-y-auto p-2">
+                  {searchQuery.trim() === '' && (
+                    <p className="text-xs text-slate-500 text-center py-6">{t.searchHint}</p>
+                  )}
+                  {searchQuery.trim() !== '' && filteredSearchResults.length === 0 && (
+                    <p className="text-xs text-slate-500 text-center py-6">{t.noSearchResults}</p>
+                  )}
+                  {filteredSearchResults.map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => goToTab(item.tab)}
+                      className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-zinc-800 flex items-center justify-between gap-2 transition-all"
+                    >
+                      <span className="text-xs text-slate-200 truncate">{item.title}</span>
+                      <span className="text-[10px] shrink-0 px-2 py-0.5 rounded bg-zinc-800 text-slate-400 border border-zinc-700">{item.type}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {}
+          {isJournalModalOpen && (
+            <div
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4"
+              onClick={() => setIsJournalModalOpen(false)}
+            >
+              <div
+                className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto animate-fadeIn"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                  <h3 className="font-bold text-sm text-slate-100">{t.writeJournalEntry}</h3>
+                  <button onClick={() => setIsJournalModalOpen(false)} className="p-1 text-slate-400 hover:text-white">
+                    <Icon name="x" className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    { key: 'whatWentWell', label: t.whatWentWell },
+                    { key: 'whatWentWrong', label: t.whatWentWrong },
+                    { key: 'whatILearned', label: t.whatILearned },
+                    { key: 'whatToImprove', label: t.whatToImprove }
+                  ].map(field => (
+                    <div key={field.key}>
+                      <label className="text-[11px] font-semibold text-slate-400">{field.label}</label>
+                      <textarea
+                        value={newJournal[field.key]}
+                        onChange={(e) => setNewJournal({ ...newJournal, [field.key]: e.target.value })}
+                        rows={2}
+                        className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500 resize-none"
+                      />
+                    </div>
+                  ))}
+
+                  <div className="grid grid-cols-2 gap-4 pt-1">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-400">{t.energy} ({newJournal.energy}/5)</label>
+                      <input
+                        type="range" min="1" max="5"
+                        value={newJournal.energy}
+                        onChange={(e) => setNewJournal({ ...newJournal, energy: Number(e.target.value) })}
+                        className="w-full accent-amber-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-400">{t.confidence} ({newJournal.confidence}/5)</label>
+                      <input
+                        type="range" min="1" max="5"
+                        value={newJournal.confidence}
+                        onChange={(e) => setNewJournal({ ...newJournal, confidence: Number(e.target.value) })}
+                        className="w-full accent-indigo-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    onClick={() => setIsJournalModalOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-slate-300 font-bold text-xs hover:bg-zinc-700 transition-all"
+                  >
+                    {t.cancel}
+                  </button>
+                  <button
+                    onClick={addJournalEntry}
+                    className="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all"
+                  >
+                    {t.save}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {}
           {isAICoachOpen && (
@@ -706,11 +930,35 @@
                   onClick={() => setIsAICoachOpen(false)}
                   className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all"
                 >
-                  Apply Coaching Strategy
+                  {t.applyCoaching}
                 </button>
               </div>
             </div>
           )}
+
+          {}
+          <div className={`fixed bottom-6 ${isRTL ? 'left-6' : 'right-6'} z-40 flex flex-col items-end gap-2`}>
+            {isFABOpen && (
+              <div className="flex flex-col gap-2 animate-fadeIn">
+                <button onClick={() => goToTab('callReviews')} className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-slate-200 hover:border-amber-500 shadow-lg flex items-center gap-2">
+                  <Icon name="phoneCall" className="w-3.5 h-3.5 text-amber-400" /> {t.logCall}
+                </button>
+                <button onClick={() => goToTab('habits')} className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-slate-200 hover:border-amber-500 shadow-lg flex items-center gap-2">
+                  <Icon name="repeat" className="w-3.5 h-3.5 text-cyan-400" /> {t.addHabit}
+                </button>
+                <button onClick={() => goToTab('objections')} className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-slate-200 hover:border-amber-500 shadow-lg flex items-center gap-2">
+                  <Icon name="shieldAlert" className="w-3.5 h-3.5 text-rose-400" /> {t.addObjection}
+                </button>
+              </div>
+            )}
+            <button
+              onClick={() => setIsFABOpen(!isFABOpen)}
+              className="w-14 h-14 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-2xl flex items-center justify-center transition-all"
+              title={t.quickAction}
+            >
+              <Icon name={isFABOpen ? 'x' : 'plus'} className="w-6 h-6" />
+            </button>
+          </div>
 
         </div>
       );
