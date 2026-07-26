@@ -24,6 +24,9 @@
     ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.7); }
     .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .group-item:hover .reveal-on-hover { opacity: 1; }
+    .reveal-on-hover { opacity: 0; transition: opacity 0.15s ease; }
+    @media (hover: none) { .reveal-on-hover { opacity: 1; } }
   </style>
 </head>
 <body class="bg-[#09090b] text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950">
@@ -62,7 +65,10 @@
         phoneCall: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>,
         shieldAlert: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/>,
         note: <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 13h6M9 17h6"/>,
-        target: <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 16a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-8a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+        target: <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 16a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-8a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>,
+        trash: <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-.87 14.14A2 2 0 0 1 16.14 22H7.86a2 2 0 0 1-1.99-1.86L5 6h14ZM10 11v6M14 11v6"/>,
+        grid: <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>,
+        tag: <path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.41l8.83 8.83a2 2 0 0 0 2.83 0l7.17-7.17a2 2 0 0 0 0-2.83l-8.83-8.82ZM7 7h.01"/>
       };
       return (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
@@ -83,13 +89,31 @@
     };
     const NOTE_ICONS = { call: 'phoneCall', objection: 'shieldAlert', note: 'note' };
 
+    const PRIORITIES = ['High', 'Medium', 'Low'];
+    const PRIORITY_COLORS = {
+      High: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+      Medium: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+      Low: 'bg-slate-500/15 text-slate-300 border-slate-500/30'
+    };
+    const PRIORITY_DOT = { High: 'bg-rose-400', Medium: 'bg-amber-400', Low: 'bg-slate-400' };
+
+    const CATEGORIES = ['Call', 'Followup', 'Prep', 'Admin', 'Learning'];
+    const CATEGORY_COLORS = {
+      Call: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+      Followup: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
+      Prep: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+      Admin: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
+      Learning: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+    };
+    const CATEGORY_ICONS = { Call: 'phoneCall', Followup: 'repeat', Prep: 'note', Admin: 'kanban', Learning: 'bookMarked' };
+
     const TRANSLATIONS = {
       en: {
         appName: "Sales OS", appSub: "Personal Sales Operating System",
         questionOfDay: "How can I become a better salesperson today?",
         dashboard: "Today's Focus", focusMode: "Focus Mode", journal: "Sales Journal", habits: "Sales Habits", pipeline: "Deals & Pipeline",
 
-        topPriorities: "Today's Top Priorities", deepWorkTime: "Deep Work Time", completedTasks: "Completed Focus Items",
+        topPriorities: "Priority Matrix", deepWorkTime: "Deep Work Time", completedTasks: "Completed Focus Items",
         monthlyTarget: "Monthly Revenue Goal", habitConsistency: "Habit Consistency",
         biggestWeakness: "Weekly Area for Growth", biggestOpportunity: "Today's Hot Opportunity",
         enterFocusMode: "Enter Focus Mode", pillarLabel: "Sales OS Pillar #1: Planning & Execution",
@@ -122,14 +146,23 @@
         quickAction: "Quick Action",
         searchPlaceholder: "Search deals, habits, journal, tasks... (Press '/')",
         noSearchResults: "No matches found", searchHint: "Start typing to search across your data",
-        languageToggle: "العربية", save: "Save", cancel: "Cancel", close: "Close"
+        languageToggle: "العربية", save: "Save", cancel: "Cancel", close: "Close", delete: "Delete",
+
+        addTask: "Add Task", taskTitle: "Task title", taskDuration: "Duration (mins)",
+        taskCategory: "Category", taskPriority: "Priority", noTasksInColumn: "Nothing here yet",
+        priorityHigh: "High", priorityMedium: "Medium", priorityLow: "Low",
+        categoryCall: "Call", categoryFollowup: "Follow-up", categoryPrep: "Prep",
+        categoryAdmin: "Admin", categoryLearning: "Learning",
+        confirmDeleteTask: "Delete this task?", confirmDeleteHabit: "Delete this habit?",
+        confirmDeleteDeal: "Delete this deal and all its notes?", confirmDeleteNote: "Delete this note?",
+        confirmDeleteJournal: "Delete this journal entry?"
       },
       ar: {
         appName: "Sales OS", appSub: "نظام التشغيل الشخصي للمبيعات",
         questionOfDay: "كيف يمكنني أن أصبح بائعاً أفضل اليوم؟",
         dashboard: "تركيز اليوم", focusMode: "وضع التركيز", journal: "يومية المبيعات", habits: "عادات المبيعات", pipeline: "الصفقات والعملاء",
 
-        topPriorities: "أهم أولويات اليوم", deepWorkTime: "وقت العمل العميق", completedTasks: "المهام المكتملة",
+        topPriorities: "مصفوفة الأولويات", deepWorkTime: "وقت العمل العميق", completedTasks: "المهام المكتملة",
         monthlyTarget: "هدف الإيرادات الشهري", habitConsistency: "ثبات العادات",
         biggestWeakness: "نقطة التطوير الأسبوعية", biggestOpportunity: "أهم فرصة بيعية اليوم",
         enterFocusMode: "الدخول لوضع التركيز", pillarLabel: "ركيزة Sales OS رقم 1: التخطيط والتنفيذ",
@@ -162,7 +195,16 @@
         quickAction: "إجراء سريع",
         searchPlaceholder: "بحث في الصفقات والعادات واليومية والمهام... (اضغط '/')",
         noSearchResults: "لا توجد نتائج مطابقة", searchHint: "ابدأ الكتابة للبحث في بياناتك",
-        languageToggle: "English", save: "حفظ", cancel: "إلغاء", close: "إغلاق"
+        languageToggle: "English", save: "حفظ", cancel: "إلغاء", close: "إغلاق", delete: "حذف",
+
+        addTask: "إضافة مهمة", taskTitle: "عنوان المهمة", taskDuration: "المدة (دقائق)",
+        taskCategory: "التصنيف", taskPriority: "الأولوية", noTasksInColumn: "لا توجد مهام هنا",
+        priorityHigh: "عالية", priorityMedium: "متوسطة", priorityLow: "منخفضة",
+        categoryCall: "مكالمة", categoryFollowup: "متابعة", categoryPrep: "تحضير",
+        categoryAdmin: "إداري", categoryLearning: "تعلّم",
+        confirmDeleteTask: "حذف هذه المهمة؟", confirmDeleteHabit: "حذف هذه العادة؟",
+        confirmDeleteDeal: "حذف هذه الصفقة وكل ملاحظاتها؟", confirmDeleteNote: "حذف هذه الملاحظة؟",
+        confirmDeleteJournal: "حذف هذا التدوين؟"
       }
     };
 
@@ -185,10 +227,10 @@
     ];
 
     const INITIAL_TASKS = [
-      { id: 't1', title: 'Prepare SPIN discovery questions for Apex Holding', duration: 25, completed: false },
-      { id: 't2', title: 'Read Chapter 4 of SPIN Selling book', duration: 20, completed: true },
-      { id: 't3', title: "Review today's TechCorp objection recording with AI", duration: 15, completed: false },
-      { id: 't4', title: 'Clean up outdated contact phone numbers in CRM', duration: 10, completed: false }
+      { id: 't1', title: 'Prepare SPIN discovery questions for Apex Holding', duration: 25, completed: false, category: 'Prep', priority: 'High' },
+      { id: 't2', title: 'Read Chapter 4 of SPIN Selling book', duration: 20, completed: true, category: 'Learning', priority: 'Low' },
+      { id: 't3', title: "Review today's TechCorp objection recording with AI", duration: 15, completed: false, category: 'Followup', priority: 'High' },
+      { id: 't4', title: 'Clean up outdated contact phone numbers in CRM', duration: 10, completed: false, category: 'Admin', priority: 'Medium' }
     ];
 
     const INITIAL_DEALS = [
@@ -228,6 +270,7 @@
 
     const EMPTY_JOURNAL_FORM = { whatWentWell: '', whatWentWrong: '', whatILearned: '', whatToImprove: '', energy: 4, confidence: 5 };
     const EMPTY_DEAL_FORM = { name: '', value: '', stage: 'Lead' };
+    const EMPTY_TASK_FORM = { title: '', duration: 15, category: 'Call', priority: 'Medium' };
 
     function App() {
       const [lang, setLang] = useState('en');
@@ -251,11 +294,13 @@
       const [isFABOpen, setIsFABOpen] = useState(false);
       const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
       const [isDealModalOpen, setIsDealModalOpen] = useState(false);
+      const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
       const [isAddingHabit, setIsAddingHabit] = useState(false);
       const [newHabitTitle, setNewHabitTitle] = useState('');
 
       const [newJournal, setNewJournal] = useState(EMPTY_JOURNAL_FORM);
       const [newDeal, setNewDeal] = useState(EMPTY_DEAL_FORM);
+      const [newTask, setNewTask] = useState(EMPTY_TASK_FORM);
 
       const [expandedDealId, setExpandedDealId] = useState(null);
       const [noteDrafts, setNoteDrafts] = useState({});
@@ -300,11 +345,19 @@
         setNewJournal(EMPTY_JOURNAL_FORM);
         setIsJournalModalOpen(false);
       };
+      const deleteJournalEntry = (id) => {
+        if (!window.confirm(t.confirmDeleteJournal)) return;
+        setJournalEntries(journalEntries.filter(j => j.id !== id));
+      };
 
       const addHabit = () => {
         if (!newHabitTitle.trim()) return;
         setHabits([...habits, { id: 'h' + Date.now(), title: newHabitTitle.trim(), streak: 0, completedToday: false }]);
         setNewHabitTitle(''); setIsAddingHabit(false);
+      };
+      const deleteHabit = (id) => {
+        if (!window.confirm(t.confirmDeleteHabit)) return;
+        setHabits(habits.filter(h => h.id !== id));
       };
 
       const toggleHabit = (id) => {
@@ -318,6 +371,11 @@
         setDeals([{ id: 'd' + Date.now(), name: newDeal.name.trim(), value: Number(newDeal.value) || 0, stage: newDeal.stage, notes: [] }, ...deals]);
         setNewDeal(EMPTY_DEAL_FORM); setIsDealModalOpen(false);
       };
+      const deleteDeal = (id) => {
+        if (!window.confirm(t.confirmDeleteDeal)) return;
+        setDeals(deals.filter(d => d.id !== id));
+        if (expandedDealId === id) setExpandedDealId(null);
+      };
 
       const updateDealStage = (id, stage) => setDeals(deals.map(d => d.id === id ? { ...d, stage } : d));
 
@@ -329,6 +387,29 @@
           : d));
         setNoteDrafts({ ...noteDrafts, [dealId]: { type: 'note', content: '' } });
       };
+      const deleteNote = (dealId, noteId) => {
+        if (!window.confirm(t.confirmDeleteNote)) return;
+        setDeals(deals.map(d => d.id === dealId ? { ...d, notes: d.notes.filter(n => n.id !== noteId) } : d));
+      };
+
+      const addTask = () => {
+        if (!newTask.title.trim()) return;
+        setTasks([...tasks, {
+          id: 't' + Date.now(),
+          title: newTask.title.trim(),
+          duration: Number(newTask.duration) || 15,
+          completed: false,
+          category: newTask.category,
+          priority: newTask.priority
+        }]);
+        setNewTask(EMPTY_TASK_FORM);
+        setIsTaskModalOpen(false);
+      };
+      const deleteTask = (id) => {
+        if (!window.confirm(t.confirmDeleteTask)) return;
+        setTasks(tasks.filter(tk => tk.id !== id));
+      };
+      const toggleTask = (id) => setTasks(tasks.map(tk => tk.id === id ? { ...tk, completed: !tk.completed } : tk));
 
       const searchableItems = useMemo(() => {
         const items = [];
@@ -357,6 +438,35 @@
         { id: 'journal', icon: 'bookMarked', label: t.journal },
         { id: 'pipeline', icon: 'kanban', label: t.pipeline }
       ];
+
+      const tasksByPriority = useMemo(() => {
+        const grouped = { High: [], Medium: [], Low: [] };
+        tasks.forEach(tk => { (grouped[tk.priority] || grouped.Medium).push(tk); });
+        return grouped;
+      }, [tasks]);
+
+      const TaskCard = ({ tk }) => (
+        <div className="group-item p-3 rounded-xl border bg-zinc-800/40 border-zinc-700/50 space-y-2">
+          <div className="flex items-start gap-2.5">
+            <button onClick={() => toggleTask(tk.id)}
+              className={`w-5 h-5 mt-0.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${tk.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950 font-bold' : 'border-slate-600'}`}>
+              {tk.completed && <Icon name="check" className="w-3.5 h-3.5" />}
+            </button>
+            <div className="flex-1 min-w-0">
+              <p className={`text-xs font-semibold break-words ${tk.completed ? 'line-through text-slate-500' : 'text-slate-200'}`}>{tk.title}</p>
+              <div className="flex items-center flex-wrap gap-1.5 mt-1.5">
+                <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${CATEGORY_COLORS[tk.category] || CATEGORY_COLORS.Admin}`}>
+                  <Icon name={CATEGORY_ICONS[tk.category] || 'tag'} className="w-2.5 h-2.5" />{t['category' + tk.category]}
+                </span>
+                <span className="text-[10px] text-slate-400">{tk.duration}m</span>
+              </div>
+            </div>
+            <button onClick={() => deleteTask(tk.id)} className="reveal-on-hover shrink-0 p-1 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
+              <Icon name="trash" className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      );
 
       return (
         <div className={`min-h-screen font-sans ${theme === 'dark' ? 'bg-[#09090b] text-slate-100' : 'bg-slate-50 text-slate-800'} transition-colors duration-200 flex flex-col md:flex-row`}>
@@ -471,25 +581,34 @@
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 p-5 rounded-2xl border bg-zinc-900/70 border-zinc-800 space-y-4">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><Icon name="flame" className="w-4 h-4 text-amber-500" /><h3 className="text-sm font-bold">{t.topPriorities}</h3></div>
-                        <button onClick={() => setCurrentTab('pipeline')} className="text-xs text-amber-400 hover:underline flex items-center gap-1">
-                          {t.viewPipeline}<Icon name="chevronRight" flip={isRTL} className="w-3 h-3" />
+                        <div className="flex items-center gap-2"><Icon name="grid" className="w-4 h-4 text-amber-500" /><h3 className="text-sm font-bold">{t.topPriorities}</h3></div>
+                        <button onClick={() => setIsTaskModalOpen(true)}
+                          className="px-2.5 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-[11px] flex items-center gap-1.5 shadow-sm hover:bg-amber-400 transition-all">
+                          <Icon name="plus" className="w-3.5 h-3.5" />{t.addTask}
                         </button>
                       </div>
-                      <div className="space-y-2">
-                        {tasks.map(tk => (
-                          <div key={tk.id} className="p-3.5 rounded-xl border bg-zinc-800/40 border-zinc-700/50 flex items-center gap-3">
-                            <button onClick={() => setTasks(tasks.map(tk2 => tk2.id === tk.id ? { ...tk2, completed: !tk2.completed } : tk2))}
-                              className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all shrink-0 ${tk.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950 font-bold' : 'border-slate-600'}`}>
-                              {tk.completed && <Icon name="check" className="w-3.5 h-3.5" />}
-                            </button>
-                            <div>
-                              <p className={`text-xs font-semibold ${tk.completed ? 'line-through text-slate-500' : 'text-slate-200'}`}>{tk.title}</p>
-                              <span className="text-[10px] text-slate-400">{tk.duration} mins</span>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {PRIORITIES.map(p => (
+                          <div key={p} className="space-y-2">
+                            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border ${PRIORITY_COLORS[p]}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${PRIORITY_DOT[p]}`}></span>
+                              <span className="text-[11px] font-bold">{t['priority' + p]}</span>
+                              <span className="text-[10px] text-slate-400 ms-auto">{tasksByPriority[p].length}</span>
+                            </div>
+                            <div className="space-y-2 min-h-[40px]">
+                              {tasksByPriority[p].length === 0 && (
+                                <p className="text-[11px] text-slate-500 text-center py-3 border border-dashed border-zinc-700/60 rounded-xl">{t.noTasksInColumn}</p>
+                              )}
+                              {tasksByPriority[p].map(tk => <TaskCard key={tk.id} tk={tk} />)}
                             </div>
                           </div>
                         ))}
                       </div>
+
+                      <button onClick={() => setCurrentTab('pipeline')} className="text-xs text-amber-400 hover:underline flex items-center gap-1">
+                        {t.viewPipeline}<Icon name="chevronRight" flip={isRTL} className="w-3 h-3" />
+                      </button>
                     </div>
 
                     <div className="p-5 rounded-2xl border bg-gradient-to-b from-indigo-950/30 to-zinc-900 border-indigo-500/20 space-y-4">
@@ -558,7 +677,7 @@
 
                   <div className="space-y-2">
                     {habits.map(h => (
-                      <div key={h.id} className="p-4 rounded-xl border bg-zinc-900/70 border-zinc-800 flex items-center justify-between gap-3">
+                      <div key={h.id} className="group-item p-4 rounded-xl border bg-zinc-900/70 border-zinc-800 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <Icon name="flame" className={`w-4 h-4 ${h.streak > 0 ? 'text-amber-400' : 'text-slate-600'}`} />
                           <div>
@@ -566,10 +685,15 @@
                             <span className="text-[10px] text-slate-400">{h.streak} {t.dayStreak}</span>
                           </div>
                         </div>
-                        <button onClick={() => toggleHabit(h.id)}
-                          className={`px-3 py-1.5 rounded-lg text-[11px] font-bold shrink-0 ${h.completedToday ? 'bg-zinc-800 text-slate-300 border border-zinc-700' : 'bg-emerald-500 text-slate-950'}`}>
-                          {h.completedToday ? t.markUndone : t.markDone}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => toggleHabit(h.id)}
+                            className={`px-3 py-1.5 rounded-lg text-[11px] font-bold shrink-0 ${h.completedToday ? 'bg-zinc-800 text-slate-300 border border-zinc-700' : 'bg-emerald-500 text-slate-950'}`}>
+                            {h.completedToday ? t.markUndone : t.markDone}
+                          </button>
+                          <button onClick={() => deleteHabit(h.id)} className="reveal-on-hover p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
+                            <Icon name="trash" className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -587,12 +711,15 @@
                   </div>
                   <div className="space-y-4">
                     {journalEntries.map(j => (
-                      <div key={j.id} className="p-6 rounded-2xl border bg-zinc-900 border-zinc-800 space-y-4">
+                      <div key={j.id} className="group-item p-6 rounded-2xl border bg-zinc-900 border-zinc-800 space-y-4">
                         <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                           <span className="text-xs font-mono font-bold text-amber-400">{j.date}</span>
                           <div className="flex items-center gap-4 text-xs text-slate-400">
                             <span>{t.energy}: <strong className="text-amber-400">{j.energy}/5</strong></span>
                             <span>{t.confidence}: <strong className="text-indigo-400">{j.confidence}/5</strong></span>
+                            <button onClick={() => deleteJournalEntry(j.id)} className="reveal-on-hover p-1 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
+                              <Icon name="trash" className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -624,34 +751,42 @@
                       const isOpen = expandedDealId === deal.id;
                       const draft = noteDrafts[deal.id] || { type: 'note', content: '' };
                       return (
-                        <div key={deal.id} className="rounded-2xl border bg-zinc-900/70 border-zinc-800 overflow-hidden">
-                          <button onClick={() => setExpandedDealId(isOpen ? null : deal.id)} className="w-full p-4 flex items-center justify-between gap-3 text-left">
-                            <div className="flex items-center gap-3">
-                              <Icon name="chevronDown" className={`w-4 h-4 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                              <div>
-                                <p className="text-sm font-bold text-slate-100">{deal.name}</p>
+                        <div key={deal.id} className="group-item rounded-2xl border bg-zinc-900/70 border-zinc-800 overflow-hidden">
+                          <div className="w-full p-4 flex items-center justify-between gap-3 text-left">
+                            <button onClick={() => setExpandedDealId(isOpen ? null : deal.id)} className="flex items-center gap-3 flex-1 min-w-0">
+                              <Icon name="chevronDown" className={`w-4 h-4 text-slate-500 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                              <div className="min-w-0 text-left">
+                                <p className="text-sm font-bold text-slate-100 truncate">{deal.name}</p>
                                 <p className="text-[11px] text-slate-400">${deal.value.toLocaleString()} • {deal.notes.length} {t.pipeline}</p>
                               </div>
+                            </button>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <select value={deal.stage} onClick={e => e.stopPropagation()} onChange={e => updateDealStage(deal.id, e.target.value)}
+                                className={`px-2.5 py-1 rounded-full text-[11px] font-bold border outline-none cursor-pointer ${STAGE_COLORS[deal.stage]}`}>
+                                {STAGES.map(s => <option key={s} value={s} className="bg-zinc-900 text-slate-100">{t['stage' + s]}</option>)}
+                              </select>
+                              <button onClick={() => deleteDeal(deal.id)} className="reveal-on-hover p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
+                                <Icon name="trash" className="w-3.5 h-3.5" />
+                              </button>
                             </div>
-                            <select value={deal.stage} onClick={e => e.stopPropagation()} onChange={e => updateDealStage(deal.id, e.target.value)}
-                              className={`px-2.5 py-1 rounded-full text-[11px] font-bold border outline-none cursor-pointer ${STAGE_COLORS[deal.stage]}`}>
-                              {STAGES.map(s => <option key={s} value={s} className="bg-zinc-900 text-slate-100">{t['stage' + s]}</option>)}
-                            </select>
-                          </button>
+                          </div>
 
                           {isOpen && (
                             <div className="border-t border-zinc-800 p-4 space-y-3">
                               {deal.notes.length === 0 && <p className="text-xs text-slate-500">{t.noNotes}</p>}
                               {deal.notes.map(n => (
-                                <div key={n.id} className="flex items-start gap-2.5 text-xs">
+                                <div key={n.id} className="group-item flex items-start gap-2.5 text-xs">
                                   <div className="p-1.5 rounded-lg bg-zinc-800 shrink-0 mt-0.5"><Icon name={NOTE_ICONS[n.type]} className="w-3.5 h-3.5 text-amber-400" /></div>
-                                  <div>
+                                  <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-0.5">
                                       <span className="font-mono text-[10px] text-slate-500">{n.date}</span>
                                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-slate-400">{t['noteType' + n.type.charAt(0).toUpperCase() + n.type.slice(1)]}</span>
                                     </div>
                                     <p className="text-slate-300">{n.content}</p>
                                   </div>
+                                  <button onClick={() => deleteNote(deal.id, n.id)} className="reveal-on-hover shrink-0 p-1 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
+                                    <Icon name="trash" className="w-3.5 h-3.5" />
+                                  </button>
                                 </div>
                               ))}
 
@@ -779,6 +914,61 @@
           )}
 
           {}
+          {isTaskModalOpen && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4" onClick={() => setIsTaskModalOpen(false)}>
+              <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-fadeIn" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                  <h3 className="font-bold text-sm text-slate-100">{t.addTask}</h3>
+                  <button onClick={() => setIsTaskModalOpen(false)} className="p-1 text-slate-400 hover:text-white"><Icon name="x" className="w-4 h-4" /></button>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-400">{t.taskTitle}</label>
+                    <input autoFocus value={newTask.title} onKeyDown={e => e.key === 'Enter' && addTask()}
+                      onChange={e => setNewTask({ ...newTask, title: e.target.value })}
+                      className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-400">{t.taskDuration}</label>
+                    <input type="number" min="5" step="5" value={newTask.duration} onChange={e => setNewTask({ ...newTask, duration: e.target.value })}
+                      className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-400">{t.taskCategory}</label>
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {CATEGORIES.map(c => (
+                        <button key={c} onClick={() => setNewTask({ ...newTask, category: c })}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border flex items-center gap-1 transition-all ${
+                            newTask.category === c ? CATEGORY_COLORS[c] + ' ring-1 ring-inset ring-current' : 'bg-zinc-800 text-slate-400 border-zinc-700'
+                          }`}>
+                          <Icon name={CATEGORY_ICONS[c]} className="w-3 h-3" />{t['category' + c]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-400">{t.taskPriority}</label>
+                    <div className="flex gap-1.5 mt-1.5">
+                      {PRIORITIES.map(p => (
+                        <button key={p} onClick={() => setNewTask({ ...newTask, priority: p })}
+                          className={`flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border flex items-center justify-center gap-1.5 transition-all ${
+                            newTask.priority === p ? PRIORITY_COLORS[p] + ' ring-1 ring-inset ring-current' : 'bg-zinc-800 text-slate-400 border-zinc-700'
+                          }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${PRIORITY_DOT[p]}`}></span>{t['priority' + p]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 pt-2">
+                  <button onClick={() => setIsTaskModalOpen(false)} className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-slate-300 font-bold text-xs hover:bg-zinc-700 transition-all">{t.cancel}</button>
+                  <button onClick={addTask} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all">{t.save}</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {}
           {isAICoachOpen && (
             <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end">
               <div className="w-full max-w-md bg-zinc-900 border-l border-zinc-800 h-full p-6 flex flex-col justify-between space-y-4">
@@ -802,6 +992,9 @@
           <div className={`fixed bottom-6 ${isRTL ? 'left-6' : 'right-6'} z-40 flex flex-col items-end gap-2`}>
             {isFABOpen && (
               <div className="flex flex-col gap-2 animate-fadeIn">
+                <button onClick={() => { setIsFABOpen(false); setIsTaskModalOpen(true); }} className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-slate-200 hover:border-amber-500 shadow-lg flex items-center gap-2">
+                  <Icon name="grid" className="w-3.5 h-3.5 text-amber-400" />{t.addTask}
+                </button>
                 <button onClick={() => { setIsFABOpen(false); setIsJournalModalOpen(true); }} className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-slate-200 hover:border-amber-500 shadow-lg flex items-center gap-2">
                   <Icon name="bookMarked" className="w-3.5 h-3.5 text-amber-400" />{t.writeJournalEntry}
                 </button>
