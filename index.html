@@ -5,55 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales OS - Personal Sales Operating System</title>
 
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              400: '#fbbf24',
-              500: '#f59e0b',
-              600: '#d97706',
-            }
-          }
-        }
-      }
+      theme: { extend: { colors: { brand: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' } } } }
     }
   </script>
 
-  <!-- React 18 & ReactDOM UMD CDNs -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-
-  <!-- Babel Standalone (Compiles JSX directly in the browser) -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Custom Styles and Animation Keyframes -->
   <style>
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(100, 116, 139, 0.4);
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(100, 116, 139, 0.7);
-    }
-    .animate-fadeIn {
-      animation: fadeIn 0.25s ease-out forwards;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.4); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.7); }
+    .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body class="bg-[#09090b] text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950">
@@ -66,19 +36,10 @@
       const icons = {
         compass: <path d="m16.24 7.76-1.8 4.38 4.38 1.8-1.8-4.38ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-2.24-5.76 1.8-4.38-4.38-1.8 1.8 4.38Z"/>,
         dashboard: <path d="M4 4h6v8H4zm10 0h6v4h-6zm0 6h6v10h-6zM4 14h6v6H4z"/>,
-        calendar: <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>,
         crosshair: <path d="M12 2v4m0 12v4M2 12h4m12 0h4m-10 6a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/>,
         bookMarked: <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 1 0-5H20M10 2v8l2.5-1.5L15 10V2"/>,
-        grid: <path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h7v7h-7z"/>,
         repeat: <path d="m17 2 4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3"/>,
-        shieldAlert: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/>,
-        phoneCall: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>,
-        graduationCap: <path d="M22 10v6M2 10l10-5 10 5-10 5zM6 12v5c3 3 9 3 12 0v-5"/>,
-        target: <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 16a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-8a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>,
-        barChart: <path d="M12 20V10M18 20V4M6 20v-4"/>,
-        frown: <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16 16s-1.5-2-4-2-4 2-4 2M9 9h.01M15 9h.01"/>,
         kanban: <path d="M6 3v18M12 3v18M18 3v18"/>,
-        settings: <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>,
         brain: <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>,
         sparkles: <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>,
         search: <path d="m21 21-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0z"/>,
@@ -89,6 +50,7 @@
         checkCircle: <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3"/>,
         flame: <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"/>,
         chevronRight: <path d="m9 18 6-6-6-6"/>,
+        chevronDown: <path d="m6 9 6 6 6-6"/>,
         check: <path d="M20 6 9 17l-5-5"/>,
         lightbulb: <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5M9 18h6M10 22h4"/>,
         plus: <path d="M12 5v14M5 12h14"/>,
@@ -96,253 +58,176 @@
         play: <path d="m6 3 14 9-14 9V3z"/>,
         pause: <path d="M6 4h4v16H6zm8 0h4v16h-4z"/>,
         rotateCcw: <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5"/>,
-        bot: <path d="M12 8V4M8 2h8M12 18v4M8 22h8M5 11h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zM9 15h.01M15 15h.01"/>
+        bot: <path d="M12 8V4M8 2h8M12 18v4M8 22h8M5 11h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zM9 15h.01M15 15h.01"/>,
+        phoneCall: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>,
+        shieldAlert: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/>,
+        note: <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 13h6M9 17h6"/>,
+        target: <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 16a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-8a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
       };
-
       return (
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2" 
-          strokeLinecap="round" 
-          strokeLinejoin="round" 
-          className={className}
-          style={flip ? { transform: 'scaleX(-1)' } : undefined}
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round" className={className} style={flip ? { transform: 'scaleX(-1)' } : undefined}>
           {icons[name] || <circle cx="12" cy="12" r="10" />}
         </svg>
       );
     };
 
+    const STAGES = ['Lead', 'Discovery', 'Proposal', 'Negotiation', 'Won', 'Lost'];
+    const STAGE_COLORS = {
+      Lead: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
+      Discovery: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
+      Proposal: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+      Negotiation: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
+      Won: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+      Lost: 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+    };
+    const NOTE_ICONS = { call: 'phoneCall', objection: 'shieldAlert', note: 'note' };
+
     const TRANSLATIONS = {
       en: {
-        appName: "Sales OS",
-        appSub: "Personal Sales Operating System",
+        appName: "Sales OS", appSub: "Personal Sales Operating System",
         questionOfDay: "How can I become a better salesperson today?",
-        dashboard: "Today's Focus",
-        planner: "Daily Planner & Time-Blocking",
-        focusMode: "Focus Mode",
-        journal: "Sales Journal & Reflection",
-        eisenhower: "Priority Matrix",
-        habits: "Sales Habits",
-        objections: "Objection Library",
-        callReviews: "Call & Meeting Reviews",
-        learning: "Learning Center",
-        goals: "Goal Hierarchy",
-        analytics: "Performance Analytics",
-        rejections: "Rejection Analysis",
-        reviews: "Review System",
-        crm: "Light CRM (Pipeline)",
-        settings: "Settings",
+        dashboard: "Today's Focus", focusMode: "Focus Mode", journal: "Sales Journal", habits: "Sales Habits", pipeline: "Deals & Pipeline",
 
-        topPriorities: "Today's Top 3 Priorities",
-        todayObjective: "Daily Sales Objective",
-        motivationQuote: "Daily Sales Mindset",
-        deepWorkTime: "Deep Work Time",
-        completedTasks: "Completed Focus Items",
-        monthlyTarget: "Monthly Revenue Goal",
-        biggestWeakness: "Weekly Area for Growth",
-        biggestOpportunity: "Today's Hot Opportunity",
-        suggestedAction: "AI Suggested Focus Action",
+        topPriorities: "Today's Top Priorities", deepWorkTime: "Deep Work Time", completedTasks: "Completed Focus Items",
+        monthlyTarget: "Monthly Revenue Goal", habitConsistency: "Habit Consistency",
+        biggestWeakness: "Weekly Area for Growth", biggestOpportunity: "Today's Hot Opportunity",
+        enterFocusMode: "Enter Focus Mode", pillarLabel: "Sales OS Pillar #1: Planning & Execution",
+        topPriorityToday: "Top Priority Today:", statDeepWorkSub: "Target: 4h / day", statCompletedSub: "Focus Score",
+        statHabitSub: "day streak", statMonthlySub: "of Goal", viewPipeline: "View Pipeline",
 
-        quickAction: "Quick Log / Action",
-        logCall: "Review Call",
-        journalEntry: "Daily Journal Entry",
-        addHabit: "New Habit",
-        addObjection: "Add Objection Tactic",
-        aiCoach: "AI Sales Performance Coach",
-        aiAnalyzing: "Analyzing your sales activity with Gemini AI...",
-        aiCoachSub: "Tap for instant deal coaching",
-        applyCoaching: "Apply Coaching Strategy",
+        distractionFreeSession: "Distraction-Free Focus Session", focusSessionTitle: "Deep Work Session",
+        focusSessionSub: "Focus exclusively on this task. No interruptions.", startFocusClock: "Start Focus Clock",
+        pauseSession: "Pause Session", sessionComplete: "Session complete! Great work.",
 
-        whatWentWell: "What went well today?",
-        whatWentWrong: "What went wrong or was lost?",
-        whatILearned: "What key insight did I learn?",
-        whatToImprove: "What will I improve tomorrow?",
+        habitsSub: "Small daily actions, tracked consistently", addHabit: "New Habit",
+        addHabitPlaceholder: "e.g. Follow up with 5 leads", dayStreak: "day streak", markDone: "Mark Done", markUndone: "Undo",
 
-        searchPlaceholder: "Search goals, objections, journal, learning... (Press '/')",
-        noSearchResults: "No matches found",
-        searchHint: "Start typing to search across your data",
-        languageToggle: "العربية",
-        save: "Save Entry",
-        cancel: "Cancel",
-        close: "Close",
+        journalSub: "Reflect daily on your wins, mistakes, and sales insights", writeJournalEntry: "Write Journal Entry",
+        whatWentWell: "What went well today?", whatWentWrong: "What went wrong or was lost?",
+        whatILearned: "What key insight did I learn?", whatToImprove: "What will I improve tomorrow?",
+        energy: "Energy", confidence: "Confidence",
 
-        enterFocusMode: "Enter Focus Mode",
-        distractionFreeSession: "Distraction-Free Focus Session",
-        focusSessionTitle: "Deep Work Session",
-        focusSessionSub: "Focus exclusively on this task. No interruptions.",
-        startFocusClock: "Start Focus Clock",
-        pauseSession: "Pause Session",
-        sessionComplete: "Session complete! Great work.",
-        habitConsistency: "Habit Consistency",
-        writeJournalEntry: "Write Journal Entry",
-        journalSub: "Reflect daily on your wins, mistakes, and sales insights",
-        moduleActive: "Module Active",
-        moduleActiveDesc: "Personalized sales performance OS interface loaded and ready for daily operations.",
-        pillarLabel: "Sales OS Pillar #1: Planning & Execution",
-        statDeepWorkSub: "Target: 4h / day",
-        statCompletedSub: "Focus Score",
-        statHabitSub: "day streak",
-        statMonthlySub: "of Goal",
-        timeBlockSchedule: "Time-Block Schedule",
-        energy: "Energy",
-        confidence: "Confidence"
+        pipelineSub: "Every deal, objection, and call in one place", addDeal: "New Deal",
+        dealName: "Deal / Company name", dealValue: "Value ($)", addNote: "Add Note",
+        notePlaceholder: "Write a call summary, objection & how you handled it, or a quick note...",
+        noNotes: "No notes yet — add the first update.",
+        noteTypeCall: "Call", noteTypeObjection: "Objection", noteTypeNote: "Note",
+        stageLead: "Lead", stageDiscovery: "Discovery", stageProposal: "Proposal",
+        stageNegotiation: "Negotiation", stageWon: "Won", stageLost: "Lost",
+
+        aiCoach: "AI Sales Performance Coach", aiCoachSub: "Tap for instant deal coaching",
+        aiAnalyzing: "Analyzing your sales activity with Gemini AI...", applyCoaching: "Apply Coaching Strategy",
+
+        quickAction: "Quick Action",
+        searchPlaceholder: "Search deals, habits, journal, tasks... (Press '/')",
+        noSearchResults: "No matches found", searchHint: "Start typing to search across your data",
+        languageToggle: "العربية", save: "Save", cancel: "Cancel", close: "Close"
       },
       ar: {
-        appName: "Sales OS",
-        appSub: "نظام التشغيل الشخصي للمبيعات",
+        appName: "Sales OS", appSub: "نظام التشغيل الشخصي للمبيعات",
         questionOfDay: "كيف يمكنني أن أصبح بائعاً أفضل اليوم؟",
-        dashboard: "تركيز اليوم",
-        planner: "المخطط اليومي وتنظيم الوقت",
-        focusMode: "وضع التركيز العميق",
-        journal: "مفكرة المبيعات والتأمل",
-        eisenhower: "مصفوفة الأولويات",
-        habits: "عادات المبيعات اليومية",
-        objections: "مكتبة التعامل مع الاعتراضات",
-        callReviews: "مراجعة المكالمات والاجتماعات",
-        learning: "مركز التعلم والنمو",
-        goals: "هرمية الأهداف",
-        analytics: "تحليلات الأداء والتطوير",
-        rejections: "تحليل صفقات الخسارة",
-        reviews: "نظام المراجعة الدورية",
-        crm: "إدارة العملاء المبسطة",
-        settings: "الإعدادات",
+        dashboard: "تركيز اليوم", focusMode: "وضع التركيز", journal: "يومية المبيعات", habits: "عادات المبيعات", pipeline: "الصفقات والعملاء",
 
-        topPriorities: "أهم 3 أهداف اليوم",
-        todayObjective: "الهدف اليومي للمبيعات",
-        motivationQuote: "عقلية اليوم للمبيعات",
-        deepWorkTime: "وقت العمل العميق",
-        completedTasks: "المهام المكتملة",
-        monthlyTarget: "هدف الإيرادات الشهري",
-        biggestWeakness: "نقطة التطوير الأسبوعية",
-        biggestOpportunity: "أهم فرصة بيعية اليوم",
-        suggestedAction: "إجراء اليوم المقترح بالذكاء الاصطناعي",
+        topPriorities: "أهم أولويات اليوم", deepWorkTime: "وقت العمل العميق", completedTasks: "المهام المكتملة",
+        monthlyTarget: "هدف الإيرادات الشهري", habitConsistency: "ثبات العادات",
+        biggestWeakness: "نقطة التطوير الأسبوعية", biggestOpportunity: "أهم فرصة بيعية اليوم",
+        enterFocusMode: "الدخول لوضع التركيز", pillarLabel: "ركيزة Sales OS رقم 1: التخطيط والتنفيذ",
+        topPriorityToday: "أهم أولوية اليوم:", statDeepWorkSub: "الهدف: 4 ساعات / يوم", statCompletedSub: "درجة التركيز",
+        statHabitSub: "يوم متتالي", statMonthlySub: "من الهدف", viewPipeline: "عرض الصفقات",
+
+        distractionFreeSession: "جلسة تركيز بدون مشتتات", focusSessionTitle: "جلسة عمل عميق",
+        focusSessionSub: "ركز فقط على هذه المهمة. بدون مقاطعات.", startFocusClock: "ابدأ ساعة التركيز",
+        pauseSession: "إيقاف مؤقت", sessionComplete: "انتهت الجلسة! عمل رائع.",
+
+        habitsSub: "خطوات يومية بسيطة، بثبات", addHabit: "عادة جديدة",
+        addHabitPlaceholder: "مثال: متابعة 5 عملاء محتملين", dayStreak: "يوم متتالي", markDone: "تم الإنجاز", markUndone: "تراجع",
+
+        journalSub: "تأمل يومياً في إنجازاتك وأخطائك ورؤاك البيعية", writeJournalEntry: "تدوين ملاحظة جديدة",
+        whatWentWell: "ما الذي نجحت فيه اليوم؟", whatWentWrong: "ما الذي لم يمر بشكل جيد؟",
+        whatILearned: "ما هي الفكرة الرئيسية التي تعلمتها؟", whatToImprove: "ما الذي سأتحسن فيه غداً؟",
+        energy: "الطاقة", confidence: "الثقة",
+
+        pipelineSub: "كل صفقة واعتراض ومكالمة في مكان واحد", addDeal: "صفقة جديدة",
+        dealName: "اسم الصفقة / العميل", dealValue: "القيمة ($)", addNote: "إضافة ملاحظة",
+        notePlaceholder: "اكتب ملخص مكالمة، اعتراض وإزاي تعاملت معاه، أو ملاحظة سريعة...",
+        noNotes: "لسه مفيش ملاحظات — ضيف أول تحديث.",
+        noteTypeCall: "مكالمة", noteTypeObjection: "اعتراض", noteTypeNote: "ملاحظة",
+        stageLead: "عميل محتمل", stageDiscovery: "اكتشاف", stageProposal: "عرض سعر",
+        stageNegotiation: "تفاوض", stageWon: "تم الفوز", stageLost: "خسارة",
+
+        aiCoach: "الموجه الذكي للبيع", aiCoachSub: "اضغط للحصول على تدريب فوري للصفقة",
+        aiAnalyzing: "جاري تحليل أدائك البيعي عبر Gemini AI...", applyCoaching: "تطبيق استراتيجية التدريب",
 
         quickAction: "إجراء سريع",
-        logCall: "تسجيل مراجعة مكالمة",
-        journalEntry: "تدوين يومية المبيعات",
-        addHabit: "عادة جديدة",
-        addObjection: "إضافة اعتراض وحله",
-        aiCoach: "الموجه الذكي للبيع الشخصي",
-        aiAnalyzing: "جاري تحليل أدائك البيعي عبر Gemini AI...",
-        aiCoachSub: "اضغط للحصول على تدريب فوري للصفقة",
-        applyCoaching: "تطبيق استراتيجية التدريب",
-
-        whatWentWell: "ما الذي نجحت فيه اليوم؟",
-        whatWentWrong: "ما الذي لم يمر بشكل جيد؟",
-        whatILearned: "ما هي الفكرة الرئيسية التي تعلمتها؟",
-        whatToImprove: "ما الذي سأتحسن فيه غداً؟",
-
-        searchPlaceholder: "بحث شامل في الأهداف، الاعتراضات، الملاحظات والعملاء... (اضغط '/')",
-        noSearchResults: "لا توجد نتائج مطابقة",
-        searchHint: "ابدأ الكتابة للبحث في بياناتك",
-        languageToggle: "English",
-        save: "حفظ البيانات",
-        cancel: "إلغاء",
-        close: "إغلاق",
-
-        enterFocusMode: "الدخول إلى وضع التركيز",
-        distractionFreeSession: "جلسة تركيز بدون مشتتات",
-        focusSessionTitle: "جلسة عمل عميق",
-        focusSessionSub: "ركز فقط على هذه المهمة. بدون مقاطعات.",
-        startFocusClock: "ابدأ ساعة التركيز",
-        pauseSession: "إيقاف الجلسة مؤقتاً",
-        sessionComplete: "انتهت الجلسة! عمل رائع.",
-        habitConsistency: "ثبات العادات",
-        writeJournalEntry: "تدوين ملاحظة جديدة",
-        journalSub: "تأمل يومياً في إنجازاتك وأخطائك ورؤاك البيعية",
-        moduleActive: "الوحدة نشطة",
-        moduleActiveDesc: "واجهة نظام تشغيل المبيعات الشخصي جاهزة للعمليات اليومية.",
-        pillarLabel: "ركيزة Sales OS رقم 1: التخطيط والتنفيذ",
-        statDeepWorkSub: "الهدف: 4 ساعات / يوم",
-        statCompletedSub: "درجة التركيز",
-        statHabitSub: "يوم متتالي",
-        statMonthlySub: "من الهدف",
-        timeBlockSchedule: "جدول تقسيم الوقت",
-        energy: "الطاقة",
-        confidence: "الثقة"
+        searchPlaceholder: "بحث في الصفقات والعادات واليومية والمهام... (اضغط '/')",
+        noSearchResults: "لا توجد نتائج مطابقة", searchHint: "ابدأ الكتابة للبحث في بياناتك",
+        languageToggle: "English", save: "حفظ", cancel: "إلغاء", close: "إغلاق"
       }
     };
 
     const INITIAL_HABITS = [
-      { id: 'h1', title: 'Morning Sales Planning (15m)', category: 'Planning', streak: 12, completedToday: true, score: 95 },
-      { id: 'h2', title: 'Outbound Prospecting (10 Contacts)', category: 'Execution', streak: 5, completedToday: false, score: 80 },
-      { id: 'h3', title: 'Post-Call Debrief & AI Review', category: 'Reflection', streak: 8, completedToday: true, score: 88 },
-      { id: 'h4', title: 'Read 20 min of Sales Methodology', category: 'Learning', streak: 15, completedToday: false, score: 92 },
-      { id: 'h5', title: 'Update CRM Light Notes', category: 'Organization', streak: 4, completedToday: false, score: 75 }
-    ];
-
-    const INITIAL_OBJECTIONS = [
-      {
-        id: 'o1',
-        objection: "Your price is 30% higher than your competitor CloudFlex.",
-        category: "Pricing",
-        bestResponse: "Acknowledge value gap first: 'Price is only an issue in the absence of value. CloudFlex lacks 99.99% SLA guarantees which cost $50k+ per outage.'",
-        alternativeResponse: "Offer flexible quarterly terms rather than discounting total contract value.",
-        successRate: 78
-      },
-      {
-        id: 'o2',
-        objection: "We don't have the budget allocated for this quarter.",
-        category: "Budget / Timing",
-        bestResponse: "Shift from Cost to ROI: 'If this saves your team 12 hours a week, delaying burns $8,000 per month in lost productivity.'",
-        alternativeResponse: "Propose a pilot phase with a smaller commitment.",
-        successRate: 64
-      }
+      { id: 'h1', title: 'Morning Sales Planning (15m)', streak: 12, completedToday: true },
+      { id: 'h2', title: 'Outbound Prospecting (10 Contacts)', streak: 5, completedToday: false },
+      { id: 'h3', title: 'Post-Call Debrief & AI Review', streak: 8, completedToday: true },
+      { id: 'h4', title: 'Read 20 min of Sales Methodology', streak: 15, completedToday: false }
     ];
 
     const INITIAL_JOURNAL = [
       {
-        id: 'j1',
-        date: '2026-07-26',
+        id: 'j1', date: '2026-07-26',
         whatWentWell: "Handled price pushback well during TechCorp ME demo using ROI math.",
         whatWentWrong: "Rushed through discovery phase without finding true pain driver.",
         whatILearned: "When buyers ask for price immediately, reframe to discovery before giving numbers.",
         whatToImprove: "Slow down questions during discovery calls tomorrow.",
-        energy: 4,
-        confidence: 5
+        energy: 4, confidence: 5
       }
     ];
 
     const INITIAL_TASKS = [
-      { id: 't1', title: 'Prepare SPIN discovery questions for Apex Holding', type: 'Call Prep', quadrant: 1, duration: 25, completed: false },
-      { id: 't2', title: 'Read Chapter 4 of SPIN Selling book', type: 'Learning', quadrant: 2, duration: 20, completed: true },
-      { id: 't3', title: 'Review today\'s TechCorp objection recording with AI', type: 'Reflection', quadrant: 1, duration: 15, completed: false },
-      { id: 't4', title: 'Clean up outdated contact phone numbers in CRM', type: 'Organization', quadrant: 4, duration: 10, completed: false }
+      { id: 't1', title: 'Prepare SPIN discovery questions for Apex Holding', duration: 25, completed: false },
+      { id: 't2', title: 'Read Chapter 4 of SPIN Selling book', duration: 20, completed: true },
+      { id: 't3', title: "Review today's TechCorp objection recording with AI", duration: 15, completed: false },
+      { id: 't4', title: 'Clean up outdated contact phone numbers in CRM', duration: 10, completed: false }
     ];
 
-    // NOTE: apiKey is intentionally empty — plug in a real Gemini API key at runtime
-    // (e.g. injected by your backend) for the AI Coach to return live responses.
-    // Until then this safely falls back to a static coaching tip below.
-    async function callGeminiAPI(prompt, systemInstruction = "") {
+    const INITIAL_DEALS = [
+      {
+        id: 'd1', name: 'TechCorp ME', value: 45000, stage: 'Negotiation',
+        notes: [
+          { id: 'n1', type: 'call', date: '2026-07-24', content: 'Discovery call — identified pain point around SLA guarantees.' },
+          { id: 'n2', type: 'objection', date: '2026-07-25', content: "Price is 30% higher than CloudFlex — reframed to ROI: SLA outage costs $50k+." }
+        ]
+      },
+      {
+        id: 'd2', name: 'Apex Holding', value: 22000, stage: 'Discovery',
+        notes: [
+          { id: 'n3', type: 'call', date: '2026-07-23', content: 'Intro call scheduled, prepping SPIN questions.' }
+        ]
+      }
+    ];
+
+    // NOTE: apiKey is intentionally empty — plug in a real Gemini API key at runtime for live AI Coach responses.
+    async function callGeminiAPI(prompt) {
       const apiKey = "";
       if (!apiKey) {
         return "AI Coach Recommendation: Focus on qualifying buyer pain drivers before discussing pricing on your next call.";
       }
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-      const payload = {
-        contents: [{ parts: [{ text: prompt }] }],
-        systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined
-      };
-
       try {
         const res = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         const data = await res.json();
-        return data?.candidates?.[0]?.content?.parts?.[0]?.text || "AI Coach analyzed your activity: Focus on slowing down during discovery questions and closing the TechCorp deal today!";
+        return data?.candidates?.[0]?.content?.parts?.[0]?.text || "AI Coach: Focus on slowing down during discovery and closing the TechCorp deal today!";
       } catch (err) {
         return "AI Coach Recommendation: Focus on qualifying buyer pain drivers before discussing pricing on your next call.";
       }
     }
 
     const EMPTY_JOURNAL_FORM = { whatWentWell: '', whatWentWrong: '', whatILearned: '', whatToImprove: '', energy: 4, confidence: 5 };
+    const EMPTY_DEAL_FORM = { name: '', value: '', stage: 'Lead' };
 
     function App() {
       const [lang, setLang] = useState('en');
@@ -350,9 +235,9 @@
       const [currentTab, setCurrentTab] = useState('dashboard');
 
       const [habits, setHabits] = useState(INITIAL_HABITS);
-      const [objections, setObjections] = useState(INITIAL_OBJECTIONS);
       const [journalEntries, setJournalEntries] = useState(INITIAL_JOURNAL);
       const [tasks, setTasks] = useState(INITIAL_TASKS);
+      const [deals, setDeals] = useState(INITIAL_DEALS);
 
       const [focusTimer, setFocusTimer] = useState(25 * 60);
       const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -365,76 +250,97 @@
 
       const [isFABOpen, setIsFABOpen] = useState(false);
       const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+      const [isDealModalOpen, setIsDealModalOpen] = useState(false);
+      const [isAddingHabit, setIsAddingHabit] = useState(false);
+      const [newHabitTitle, setNewHabitTitle] = useState('');
 
       const [newJournal, setNewJournal] = useState(EMPTY_JOURNAL_FORM);
+      const [newDeal, setNewDeal] = useState(EMPTY_DEAL_FORM);
+
+      const [expandedDealId, setExpandedDealId] = useState(null);
+      const [noteDrafts, setNoteDrafts] = useState({});
 
       const t = TRANSLATIONS[lang];
       const isRTL = lang === 'ar';
 
-      useEffect(() => {
-        document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
-      }, [lang]);
+      useEffect(() => { document.documentElement.dir = isRTL ? 'rtl' : 'ltr'; }, [lang]);
 
       useEffect(() => {
         let interval = null;
-        if (isTimerRunning && focusTimer > 0) {
-          interval = setInterval(() => setFocusTimer(prev => prev - 1), 1000);
-        } else if (focusTimer === 0) {
-          setIsTimerRunning(false);
-        }
+        if (isTimerRunning && focusTimer > 0) interval = setInterval(() => setFocusTimer(prev => prev - 1), 1000);
+        else if (focusTimer === 0) setIsTimerRunning(false);
         return () => clearInterval(interval);
       }, [isTimerRunning, focusTimer]);
 
       useEffect(() => {
         const handleKeyDown = (e) => {
           if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
-            e.preventDefault();
-            setIsSearchOpen(true);
+            e.preventDefault(); setIsSearchOpen(true);
           }
-          if (e.key === 'Escape') {
-            setIsSearchOpen(false);
-            setIsFABOpen(false);
-          }
+          if (e.key === 'Escape') { setIsSearchOpen(false); setIsFABOpen(false); }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
       }, []);
 
       const runAICoachAnalysis = async () => {
-        setIsAiLoading(true);
-        setIsAICoachOpen(true);
+        setIsAiLoading(true); setIsAICoachOpen(true);
         const result = await callGeminiAPI("Give me 3 actionable tips for today's sales performance.");
-        setAiCoachResponse(result);
-        setIsAiLoading(false);
+        setAiCoachResponse(result); setIsAiLoading(false);
       };
 
       const formatTimer = (seconds) => {
-        const m = Math.floor(seconds / 60);
-        const s = seconds % 60;
+        const m = Math.floor(seconds / 60), s = seconds % 60;
         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
       };
 
       const addJournalEntry = () => {
         if (!newJournal.whatWentWell.trim() && !newJournal.whatILearned.trim()) return;
-        const entry = {
-          id: 'j' + Date.now(),
-          date: new Date().toISOString().split('T')[0],
-          ...newJournal
-        };
-        setJournalEntries([entry, ...journalEntries]);
+        setJournalEntries([{ id: 'j' + Date.now(), date: new Date().toISOString().split('T')[0], ...newJournal }, ...journalEntries]);
         setNewJournal(EMPTY_JOURNAL_FORM);
         setIsJournalModalOpen(false);
       };
 
-      // Searchable index built from live app data so the search bar actually works
+      const addHabit = () => {
+        if (!newHabitTitle.trim()) return;
+        setHabits([...habits, { id: 'h' + Date.now(), title: newHabitTitle.trim(), streak: 0, completedToday: false }]);
+        setNewHabitTitle(''); setIsAddingHabit(false);
+      };
+
+      const toggleHabit = (id) => {
+        setHabits(habits.map(h => h.id === id
+          ? { ...h, completedToday: !h.completedToday, streak: h.completedToday ? Math.max(0, h.streak - 1) : h.streak + 1 }
+          : h));
+      };
+
+      const addDeal = () => {
+        if (!newDeal.name.trim()) return;
+        setDeals([{ id: 'd' + Date.now(), name: newDeal.name.trim(), value: Number(newDeal.value) || 0, stage: newDeal.stage, notes: [] }, ...deals]);
+        setNewDeal(EMPTY_DEAL_FORM); setIsDealModalOpen(false);
+      };
+
+      const updateDealStage = (id, stage) => setDeals(deals.map(d => d.id === id ? { ...d, stage } : d));
+
+      const addNoteToDeal = (dealId) => {
+        const draft = noteDrafts[dealId];
+        if (!draft || !draft.content || !draft.content.trim()) return;
+        setDeals(deals.map(d => d.id === dealId
+          ? { ...d, notes: [...d.notes, { id: 'n' + Date.now(), type: draft.type || 'note', date: new Date().toISOString().split('T')[0], content: draft.content.trim() }] }
+          : d));
+        setNoteDrafts({ ...noteDrafts, [dealId]: { type: 'note', content: '' } });
+      };
+
       const searchableItems = useMemo(() => {
         const items = [];
         habits.forEach(h => items.push({ id: 'habit-' + h.id, title: h.title, type: t.habits, tab: 'habits' }));
-        objections.forEach(o => items.push({ id: 'obj-' + o.id, title: o.objection, type: t.objections, tab: 'objections' }));
         journalEntries.forEach(j => items.push({ id: 'jrn-' + j.id, title: j.whatWentWell || j.whatILearned, type: t.journal, tab: 'journal' }));
         tasks.forEach(tk => items.push({ id: 'task-' + tk.id, title: tk.title, type: t.dashboard, tab: 'dashboard' }));
+        deals.forEach(d => {
+          items.push({ id: 'deal-' + d.id, title: d.name, type: t.pipeline, tab: 'pipeline' });
+          d.notes.forEach(n => items.push({ id: 'note-' + n.id, title: `${d.name}: ${n.content}`, type: t.pipeline, tab: 'pipeline' }));
+        });
         return items;
-      }, [habits, objections, journalEntries, tasks, t]);
+      }, [habits, journalEntries, tasks, deals, t]);
 
       const filteredSearchResults = useMemo(() => {
         if (!searchQuery.trim()) return [];
@@ -442,18 +348,21 @@
         return searchableItems.filter(i => i.title.toLowerCase().includes(q));
       }, [searchQuery, searchableItems]);
 
-      const goToTab = (tab) => {
-        setCurrentTab(tab);
-        setIsSearchOpen(false);
-        setIsFABOpen(false);
-        setSearchQuery('');
-      };
+      const goToTab = (tab) => { setCurrentTab(tab); setIsSearchOpen(false); setIsFABOpen(false); setSearchQuery(''); };
+
+      const NAV_ITEMS = [
+        { id: 'dashboard', icon: 'dashboard', label: t.dashboard },
+        { id: 'focus', icon: 'crosshair', label: t.focusMode },
+        { id: 'habits', icon: 'repeat', label: t.habits },
+        { id: 'journal', icon: 'bookMarked', label: t.journal },
+        { id: 'pipeline', icon: 'kanban', label: t.pipeline }
+      ];
 
       return (
         <div className={`min-h-screen font-sans ${theme === 'dark' ? 'bg-[#09090b] text-slate-100' : 'bg-slate-50 text-slate-800'} transition-colors duration-200 flex flex-col md:flex-row`}>
 
           {}
-          <aside className={`w-full md:w-64 border-b md:border-b-0 ${isRTL ? 'md:border-l' : 'md:border-r'} ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]' : 'border-slate-200 bg-white'} flex flex-col justify-between shrink-0 p-4`}>
+          <aside className={`w-full md:w-60 border-b md:border-b-0 ${isRTL ? 'md:border-l' : 'md:border-r'} ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]' : 'border-slate-200 bg-white'} flex flex-col justify-between shrink-0 p-4`}>
             <div>
               <div className="flex items-center gap-3 mb-6 px-2">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-lg">
@@ -469,34 +378,14 @@
                 💡 "{t.questionOfDay}"
               </div>
 
-              <nav className="space-y-1 max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
-                {[
-                  { id: 'dashboard', icon: 'dashboard', label: t.dashboard },
-                  { id: 'planner', icon: 'calendar', label: t.planner },
-                  { id: 'focus', icon: 'crosshair', label: t.focusMode },
-                  { id: 'journal', icon: 'bookMarked', label: t.journal },
-                  { id: 'eisenhower', icon: 'grid', label: t.eisenhower },
-                  { id: 'habits', icon: 'repeat', label: t.habits },
-                  { id: 'objections', icon: 'shieldAlert', label: t.objections },
-                  { id: 'callReviews', icon: 'phoneCall', label: t.callReviews },
-                  { id: 'learning', icon: 'graduationCap', label: t.learning },
-                  { id: 'goals', icon: 'target', label: t.goals },
-                  { id: 'analytics', icon: 'barChart', label: t.analytics },
-                  { id: 'rejections', icon: 'frown', label: t.rejections },
-                  { id: 'crm', icon: 'kanban', label: t.crm },
-                  { id: 'settings', icon: 'settings', label: t.settings },
-                ].map(item => {
+              <nav className="space-y-1">
+                {NAV_ITEMS.map(item => {
                   const active = currentTab === item.id;
                   return (
-                    <button
-                      key={item.id}
-                      onClick={() => setCurrentTab(item.id)}
+                    <button key={item.id} onClick={() => setCurrentTab(item.id)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                        active 
-                          ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-sm' 
-                          : 'text-slate-400 hover:bg-zinc-800/60 hover:text-slate-200'
-                      }`}
-                    >
+                        active ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-sm' : 'text-slate-400 hover:bg-zinc-800/60 hover:text-slate-200'
+                      }`}>
                       <Icon name={item.icon} className={`w-4 h-4 ${active ? 'text-amber-400' : 'text-slate-400'}`} />
                       <span>{item.label}</span>
                     </button>
@@ -506,19 +395,12 @@
             </div>
 
             <div className="mt-4 pt-3 border-t border-zinc-800/60">
-              <button
-                onClick={() => runAICoachAnalysis()}
-                className="w-full rounded-xl p-3 bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900 border border-indigo-500/30 hover:border-indigo-500/60 transition-all text-left"
-              >
+              <button onClick={() => runAICoachAnalysis()}
+                className="w-full rounded-xl p-3 bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900 border border-indigo-500/30 hover:border-indigo-500/60 transition-all text-left">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
-                    <Icon name="brain" className="w-4 h-4" />
-                  </div>
+                  <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400"><Icon name="brain" className="w-4 h-4" /></div>
                   <div>
-                    <p className="text-xs font-bold text-indigo-200 flex items-center gap-1">
-                      {t.aiCoach}
-                      <Icon name="sparkles" className="w-3 h-3 text-amber-400" />
-                    </p>
+                    <p className="text-xs font-bold text-indigo-200 flex items-center gap-1">{t.aiCoach}<Icon name="sparkles" className="w-3 h-3 text-amber-400" /></p>
                     <p className="text-[10px] text-indigo-300/70">{t.aiCoachSub}</p>
                   </div>
                 </div>
@@ -530,88 +412,56 @@
           <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
 
             <header className={`h-16 px-6 border-b ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]/80' : 'border-slate-200 bg-white/80'} backdrop-blur-md sticky top-0 z-20 flex items-center justify-between gap-4`}>
-              <button 
-                onClick={() => setIsSearchOpen(true)}
-                className="flex-1 max-w-md flex items-center justify-between px-3.5 py-2 rounded-xl text-xs bg-zinc-900 text-slate-400 border border-zinc-800 hover:border-slate-400 transition-all"
-              >
-                <div className="flex items-center gap-2">
-                  <Icon name="search" className="w-4 h-4 text-slate-400" />
-                  <span>{t.searchPlaceholder}</span>
-                </div>
-                <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded border border-slate-700">
-                  /
-                </kbd>
+              <button onClick={() => setIsSearchOpen(true)}
+                className="flex-1 max-w-md flex items-center justify-between px-3.5 py-2 rounded-xl text-xs bg-zinc-900 text-slate-400 border border-zinc-800 hover:border-slate-400 transition-all">
+                <div className="flex items-center gap-2"><Icon name="search" className="w-4 h-4 text-slate-400" /><span>{t.searchPlaceholder}</span></div>
+                <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded border border-slate-700">/</kbd>
               </button>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsJournalModalOpen(true)}
-                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md"
-                >
-                  <Icon name="bookMarked" className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{t.journalEntry}</span>
+                <button onClick={() => setIsJournalModalOpen(true)}
+                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md">
+                  <Icon name="bookMarked" className="w-3.5 h-3.5" /><span className="hidden sm:inline">{t.writeJournalEntry}</span>
                 </button>
-
-                <button
-                  onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-                  className="p-2 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-zinc-800 text-slate-300"
-                >
-                  <Icon name="languages" className="w-4 h-4 text-indigo-400" />
-                  <span className="uppercase text-[11px]">{t.languageToggle}</span>
+                <button onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} className="p-2 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-zinc-800 text-slate-300">
+                  <Icon name="languages" className="w-4 h-4 text-indigo-400" /><span className="uppercase text-[11px]">{t.languageToggle}</span>
                 </button>
-
-                <button
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="p-2 rounded-lg hover:bg-zinc-800 text-amber-400"
-                >
+                <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-2 rounded-lg hover:bg-zinc-800 text-amber-400">
                   <Icon name={theme === 'dark' ? 'sun' : 'moon'} className="w-4 h-4" />
                 </button>
-
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-indigo-500 flex items-center justify-center text-slate-950 font-black text-xs ring-2 ring-amber-500/30">
-                  OS
-                </div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-indigo-500 flex items-center justify-center text-slate-950 font-black text-xs ring-2 ring-amber-500/30">OS</div>
               </div>
             </header>
 
-            {}
-            <div className="p-6 max-w-7xl w-full mx-auto space-y-6">
+            <div className="p-6 max-w-5xl w-full mx-auto space-y-6">
 
+              {}
               {currentTab === 'dashboard' && (
                 <div className="space-y-6 animate-fadeIn">
-
                   <div className="p-6 rounded-2xl bg-gradient-to-r from-zinc-900 via-indigo-950/40 to-zinc-900 border border-amber-500/20 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                          DAILY MINDSET
-                        </span>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">DAILY MINDSET</span>
                         <span className="text-xs text-slate-400">• {t.pillarLabel}</span>
                       </div>
                       <h2 className="text-xl font-black text-slate-100">"You don't close sales by pitching; you close sales by understanding."</h2>
-                      <p className="text-xs text-slate-400">Top Priority Today: Complete discovery prep for TechCorp SLA deal.</p>
+                      <p className="text-xs text-slate-400">{t.topPriorityToday} Complete discovery prep for TechCorp SLA deal.</p>
                     </div>
-
-                    <button 
-                      onClick={() => setCurrentTab('focus')}
-                      className="px-4 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 hover:bg-amber-400 transition-all shrink-0"
-                    >
-                      <Icon name="crosshair" className="w-4 h-4" />
-                      {t.enterFocusMode}
+                    <button onClick={() => setCurrentTab('focus')}
+                      className="px-4 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 hover:bg-amber-400 transition-all shrink-0">
+                      <Icon name="crosshair" className="w-4 h-4" />{t.enterFocusMode}
                     </button>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
                       { label: t.deepWorkTime, val: '2h 45m', sub: t.statDeepWorkSub, icon: 'clock', color: 'text-amber-400' },
-                      { label: t.completedTasks, val: `${tasks.filter(tk=>tk.completed).length} / ${tasks.length}`, sub: `75% ${t.statCompletedSub}`, icon: 'checkCircle', color: 'text-emerald-400' },
+                      { label: t.completedTasks, val: `${tasks.filter(tk => tk.completed).length} / ${tasks.length}`, sub: `75% ${t.statCompletedSub}`, icon: 'checkCircle', color: 'text-emerald-400' },
                       { label: t.habitConsistency, val: '88%', sub: `12 ${t.statHabitSub}`, icon: 'repeat', color: 'text-cyan-400' },
                       { label: t.monthlyTarget, val: '68%', sub: `$170k / $250k ${t.statMonthlySub}`, icon: 'target', color: 'text-indigo-400' }
                     ].map((stat, i) => (
                       <div key={i} className="p-4 rounded-xl border bg-zinc-900/70 border-zinc-800 space-y-1.5">
-                        <div className="flex items-center justify-between text-slate-400 text-xs">
-                          <span>{stat.label}</span>
-                          <Icon name={stat.icon} className={`w-4 h-4 ${stat.color}`} />
-                        </div>
+                        <div className="flex items-center justify-between text-slate-400 text-xs"><span>{stat.label}</span><Icon name={stat.icon} className={`w-4 h-4 ${stat.color}`} /></div>
                         <div className="text-lg font-black">{stat.val}</div>
                         <div className="text-[10px] text-slate-400">{stat.sub}</div>
                       </div>
@@ -621,50 +471,34 @@
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 p-5 rounded-2xl border bg-zinc-900/70 border-zinc-800 space-y-4">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Icon name="flame" className="w-4 h-4 text-amber-500" />
-                          <h3 className="text-sm font-bold">{t.topPriorities}</h3>
-                        </div>
-                        <button onClick={() => setCurrentTab('planner')} className="text-xs text-amber-400 hover:underline flex items-center gap-1">
-                          {t.timeBlockSchedule} <Icon name="chevronRight" flip={isRTL} className="w-3 h-3" />
+                        <div className="flex items-center gap-2"><Icon name="flame" className="w-4 h-4 text-amber-500" /><h3 className="text-sm font-bold">{t.topPriorities}</h3></div>
+                        <button onClick={() => setCurrentTab('pipeline')} className="text-xs text-amber-400 hover:underline flex items-center gap-1">
+                          {t.viewPipeline}<Icon name="chevronRight" flip={isRTL} className="w-3 h-3" />
                         </button>
                       </div>
-
                       <div className="space-y-2">
                         {tasks.map(tk => (
-                          <div key={tk.id} className="p-3.5 rounded-xl border bg-zinc-800/40 border-zinc-700/50 flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-3">
-                              <button
-                                onClick={() => setTasks(tasks.map(tk2 => tk2.id === tk.id ? { ...tk2, completed: !tk2.completed } : tk2))}
-                                className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${tk.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950 font-bold' : 'border-slate-600'}`}
-                              >
-                                {tk.completed && <Icon name="check" className="w-3.5 h-3.5" />}
-                              </button>
-                              <div>
-                                <p className={`text-xs font-semibold ${tk.completed ? 'line-through text-slate-500' : 'text-slate-200'}`}>{tk.title}</p>
-                                <span className="text-[10px] text-slate-400">{tk.type} • {tk.duration} mins</span>
-                              </div>
+                          <div key={tk.id} className="p-3.5 rounded-xl border bg-zinc-800/40 border-zinc-700/50 flex items-center gap-3">
+                            <button onClick={() => setTasks(tasks.map(tk2 => tk2.id === tk.id ? { ...tk2, completed: !tk2.completed } : tk2))}
+                              className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all shrink-0 ${tk.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950 font-bold' : 'border-slate-600'}`}>
+                              {tk.completed && <Icon name="check" className="w-3.5 h-3.5" />}
+                            </button>
+                            <div>
+                              <p className={`text-xs font-semibold ${tk.completed ? 'line-through text-slate-500' : 'text-slate-200'}`}>{tk.title}</p>
+                              <span className="text-[10px] text-slate-400">{tk.duration} mins</span>
                             </div>
-                            <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                              Q{tk.quadrant}
-                            </span>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     <div className="p-5 rounded-2xl border bg-gradient-to-b from-indigo-950/30 to-zinc-900 border-indigo-500/20 space-y-4">
-                      <div className="flex items-center gap-2 text-indigo-400">
-                        <Icon name="lightbulb" className="w-4 h-4" />
-                        <h3 className="text-xs font-bold uppercase tracking-wider">AI Growth Insight</h3>
-                      </div>
-
+                      <div className="flex items-center gap-2 text-indigo-400"><Icon name="lightbulb" className="w-4 h-4" /><h3 className="text-xs font-bold uppercase tracking-wider">AI Growth Insight</h3></div>
                       <div className="space-y-3 text-xs">
                         <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/40 space-y-1">
                           <span className="text-[10px] font-bold text-amber-400">{t.biggestWeakness}</span>
                           <p className="text-slate-300 text-[11px]">Talk-to-Listen ratio in discovery calls (currently 65% talk time).</p>
                         </div>
-
                         <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/40 space-y-1">
                           <span className="text-[10px] font-bold text-emerald-400">{t.biggestOpportunity}</span>
                           <p className="text-slate-300 text-[11px]">TechCorp ME cloud proposal ($45k) closing window this week.</p>
@@ -679,42 +513,65 @@
               {currentTab === 'focus' && (
                 <div className="max-w-xl mx-auto p-8 rounded-3xl border border-amber-500/30 bg-zinc-900/90 shadow-2xl text-center space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
-                    <Icon name="crosshair" className="w-4 h-4" />
-                    {t.distractionFreeSession}
+                    <Icon name="crosshair" className="w-4 h-4" />{t.distractionFreeSession}
                   </div>
-
                   <div>
                     <h2 className="text-xl font-bold text-slate-100">{t.focusSessionTitle}</h2>
                     <p className="text-xs text-slate-400 mt-1">{t.focusSessionSub}</p>
                   </div>
-
                   <div className="py-6">
-                    <div className="text-6xl font-black font-mono tracking-wider text-amber-400">
-                      {formatTimer(focusTimer)}
-                    </div>
-                    {focusTimer === 0 && (
-                      <p className="text-xs font-semibold text-emerald-400 mt-3">{t.sessionComplete}</p>
-                    )}
+                    <div className="text-6xl font-black font-mono tracking-wider text-amber-400">{formatTimer(focusTimer)}</div>
+                    {focusTimer === 0 && <p className="text-xs font-semibold text-emerald-400 mt-3">{t.sessionComplete}</p>}
                   </div>
-
                   <div className="flex items-center justify-center gap-3">
-                    <button
-                      disabled={focusTimer === 0}
-                      onClick={() => setIsTimerRunning(!isTimerRunning)}
-                      className={`px-6 py-3 rounded-2xl font-black text-xs flex items-center gap-2 transition-all shadow-lg disabled:opacity-40 disabled:cursor-not-allowed ${
-                        isTimerRunning ? 'bg-rose-500 text-white' : 'bg-amber-500 text-slate-950 hover:bg-amber-400'
-                      }`}
-                    >
-                      <Icon name={isTimerRunning ? "pause" : "play"} className="w-4 h-4" />
-                      {isTimerRunning ? t.pauseSession : t.startFocusClock}
+                    <button disabled={focusTimer === 0} onClick={() => setIsTimerRunning(!isTimerRunning)}
+                      className={`px-6 py-3 rounded-2xl font-black text-xs flex items-center gap-2 transition-all shadow-lg disabled:opacity-40 disabled:cursor-not-allowed ${isTimerRunning ? 'bg-rose-500 text-white' : 'bg-amber-500 text-slate-950 hover:bg-amber-400'}`}>
+                      <Icon name={isTimerRunning ? "pause" : "play"} className="w-4 h-4" />{isTimerRunning ? t.pauseSession : t.startFocusClock}
                     </button>
-
-                    <button
-                      onClick={() => { setIsTimerRunning(false); setFocusTimer(25 * 60); }}
-                      className="p-3 rounded-2xl bg-zinc-800 text-slate-300 hover:bg-zinc-700"
-                    >
+                    <button onClick={() => { setIsTimerRunning(false); setFocusTimer(25 * 60); }} className="p-3 rounded-2xl bg-zinc-800 text-slate-300 hover:bg-zinc-700">
                       <Icon name="rotateCcw" className="w-4 h-4" />
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {}
+              {currentTab === 'habits' && (
+                <div className="space-y-4 animate-fadeIn">
+                  <div className="flex items-center justify-between">
+                    <div><h2 className="text-lg font-bold">{t.habits}</h2><p className="text-xs text-slate-400">{t.habitsSub}</p></div>
+                    <button onClick={() => setIsAddingHabit(!isAddingHabit)} className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md">
+                      <Icon name="plus" className="w-4 h-4" />{t.addHabit}
+                    </button>
+                  </div>
+
+                  {isAddingHabit && (
+                    <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-900 flex items-center gap-2">
+                      <input autoFocus value={newHabitTitle} onChange={e => setNewHabitTitle(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && addHabit()}
+                        placeholder={t.addHabitPlaceholder}
+                        className="flex-1 bg-zinc-800/60 border border-zinc-700 rounded-lg px-3 py-2 text-xs outline-none focus:border-amber-500" />
+                      <button onClick={addHabit} className="px-3 py-2 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold">{t.save}</button>
+                      <button onClick={() => { setIsAddingHabit(false); setNewHabitTitle(''); }} className="px-3 py-2 rounded-lg bg-zinc-800 text-slate-300 text-xs font-bold">{t.cancel}</button>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    {habits.map(h => (
+                      <div key={h.id} className="p-4 rounded-xl border bg-zinc-900/70 border-zinc-800 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <Icon name="flame" className={`w-4 h-4 ${h.streak > 0 ? 'text-amber-400' : 'text-slate-600'}`} />
+                          <div>
+                            <p className={`text-xs font-semibold ${h.completedToday ? 'text-slate-200' : 'text-slate-300'}`}>{h.title}</p>
+                            <span className="text-[10px] text-slate-400">{h.streak} {t.dayStreak}</span>
+                          </div>
+                        </div>
+                        <button onClick={() => toggleHabit(h.id)}
+                          className={`px-3 py-1.5 rounded-lg text-[11px] font-bold shrink-0 ${h.completedToday ? 'bg-zinc-800 text-slate-300 border border-zinc-700' : 'bg-emerald-500 text-slate-950'}`}>
+                          {h.completedToday ? t.markUndone : t.markDone}
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -723,19 +580,11 @@
               {currentTab === 'journal' && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-lg font-bold">{t.journal}</h2>
-                      <p className="text-xs text-slate-400">{t.journalSub}</p>
-                    </div>
-                    <button
-                      onClick={() => setIsJournalModalOpen(true)}
-                      className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md"
-                    >
-                      <Icon name="plus" className="w-4 h-4" />
-                      {t.writeJournalEntry}
+                    <div><h2 className="text-lg font-bold">{t.journal}</h2><p className="text-xs text-slate-400">{t.journalSub}</p></div>
+                    <button onClick={() => setIsJournalModalOpen(true)} className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md">
+                      <Icon name="plus" className="w-4 h-4" />{t.writeJournalEntry}
                     </button>
                   </div>
-
                   <div className="space-y-4">
                     {journalEntries.map(j => (
                       <div key={j.id} className="p-6 rounded-2xl border bg-zinc-900 border-zinc-800 space-y-4">
@@ -746,16 +595,12 @@
                             <span>{t.confidence}: <strong className="text-indigo-400">{j.confidence}/5</strong></span>
                           </div>
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                           <div className="p-3 rounded-xl bg-emerald-950/10 border border-emerald-500/20">
-                            <span className="font-bold text-emerald-400">{t.whatWentWell}</span>
-                            <p className="text-slate-300 mt-1">{j.whatWentWell}</p>
+                            <span className="font-bold text-emerald-400">{t.whatWentWell}</span><p className="text-slate-300 mt-1">{j.whatWentWell}</p>
                           </div>
-
                           <div className="p-3 rounded-xl bg-indigo-950/10 border border-indigo-500/20">
-                            <span className="font-bold text-indigo-400">{t.whatILearned}</span>
-                            <p className="text-slate-300 mt-1">{j.whatILearned}</p>
+                            <span className="font-bold text-indigo-400">{t.whatILearned}</span><p className="text-slate-300 mt-1">{j.whatILearned}</p>
                           </div>
                         </div>
                       </div>
@@ -765,13 +610,71 @@
               )}
 
               {}
-              {['planner', 'eisenhower', 'habits', 'objections', 'callReviews', 'learning', 'goals', 'analytics', 'rejections', 'crm', 'settings'].includes(currentTab) && (
-                <div className="p-8 text-center border border-dashed border-zinc-800 rounded-2xl space-y-3 animate-fadeIn">
-                  <Icon name="sparkles" className="w-8 h-8 text-amber-400 mx-auto" />
-                  <h3 className="text-base font-bold text-slate-200">{t.moduleActive}: {t[currentTab] || currentTab.toUpperCase()}</h3>
-                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                    {t.moduleActiveDesc}
-                  </p>
+              {currentTab === 'pipeline' && (
+                <div className="space-y-4 animate-fadeIn">
+                  <div className="flex items-center justify-between">
+                    <div><h2 className="text-lg font-bold">{t.pipeline}</h2><p className="text-xs text-slate-400">{t.pipelineSub}</p></div>
+                    <button onClick={() => setIsDealModalOpen(true)} className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md">
+                      <Icon name="plus" className="w-4 h-4" />{t.addDeal}
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {deals.map(deal => {
+                      const isOpen = expandedDealId === deal.id;
+                      const draft = noteDrafts[deal.id] || { type: 'note', content: '' };
+                      return (
+                        <div key={deal.id} className="rounded-2xl border bg-zinc-900/70 border-zinc-800 overflow-hidden">
+                          <button onClick={() => setExpandedDealId(isOpen ? null : deal.id)} className="w-full p-4 flex items-center justify-between gap-3 text-left">
+                            <div className="flex items-center gap-3">
+                              <Icon name="chevronDown" className={`w-4 h-4 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                              <div>
+                                <p className="text-sm font-bold text-slate-100">{deal.name}</p>
+                                <p className="text-[11px] text-slate-400">${deal.value.toLocaleString()} • {deal.notes.length} {t.pipeline}</p>
+                              </div>
+                            </div>
+                            <select value={deal.stage} onClick={e => e.stopPropagation()} onChange={e => updateDealStage(deal.id, e.target.value)}
+                              className={`px-2.5 py-1 rounded-full text-[11px] font-bold border outline-none cursor-pointer ${STAGE_COLORS[deal.stage]}`}>
+                              {STAGES.map(s => <option key={s} value={s} className="bg-zinc-900 text-slate-100">{t['stage' + s]}</option>)}
+                            </select>
+                          </button>
+
+                          {isOpen && (
+                            <div className="border-t border-zinc-800 p-4 space-y-3">
+                              {deal.notes.length === 0 && <p className="text-xs text-slate-500">{t.noNotes}</p>}
+                              {deal.notes.map(n => (
+                                <div key={n.id} className="flex items-start gap-2.5 text-xs">
+                                  <div className="p-1.5 rounded-lg bg-zinc-800 shrink-0 mt-0.5"><Icon name={NOTE_ICONS[n.type]} className="w-3.5 h-3.5 text-amber-400" /></div>
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                      <span className="font-mono text-[10px] text-slate-500">{n.date}</span>
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-slate-400">{t['noteType' + n.type.charAt(0).toUpperCase() + n.type.slice(1)]}</span>
+                                    </div>
+                                    <p className="text-slate-300">{n.content}</p>
+                                  </div>
+                                </div>
+                              ))}
+
+                              <div className="pt-2 border-t border-zinc-800/60 space-y-2">
+                                <div className="flex items-center gap-2">
+                                  {['call', 'objection', 'note'].map(type => (
+                                    <button key={type} onClick={() => setNoteDrafts({ ...noteDrafts, [deal.id]: { ...draft, type } })}
+                                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border flex items-center gap-1 ${draft.type === type ? 'bg-amber-500 text-slate-950 border-amber-500' : 'bg-zinc-800 text-slate-400 border-zinc-700'}`}>
+                                      <Icon name={NOTE_ICONS[type]} className="w-3 h-3" />{t['noteType' + type.charAt(0).toUpperCase() + type.slice(1)]}
+                                    </button>
+                                  ))}
+                                </div>
+                                <textarea rows={2} value={draft.content} onChange={e => setNoteDrafts({ ...noteDrafts, [deal.id]: { ...draft, content: e.target.value } })}
+                                  placeholder={t.notePlaceholder}
+                                  className="w-full p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500 resize-none" />
+                                <button onClick={() => addNoteToDeal(deal.id)} className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold">{t.addNote}</button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -780,41 +683,19 @@
 
           {}
           {isSearchOpen && (
-            <div
-              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-24 px-4"
-              onClick={() => setIsSearchOpen(false)}
-            >
-              <div
-                className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-fadeIn"
-                onClick={(e) => e.stopPropagation()}
-              >
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-24 px-4" onClick={() => setIsSearchOpen(false)}>
+              <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-fadeIn" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
                   <Icon name="search" className="w-4 h-4 text-slate-400 shrink-0" />
-                  <input
-                    autoFocus
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t.searchPlaceholder}
-                    className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-500"
-                  />
-                  <button onClick={() => setIsSearchOpen(false)} className="p-1 text-slate-400 hover:text-white">
-                    <Icon name="x" className="w-4 h-4" />
-                  </button>
+                  <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchPlaceholder}
+                    className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-500" />
+                  <button onClick={() => setIsSearchOpen(false)} className="p-1 text-slate-400 hover:text-white"><Icon name="x" className="w-4 h-4" /></button>
                 </div>
-
                 <div className="max-h-80 overflow-y-auto p-2">
-                  {searchQuery.trim() === '' && (
-                    <p className="text-xs text-slate-500 text-center py-6">{t.searchHint}</p>
-                  )}
-                  {searchQuery.trim() !== '' && filteredSearchResults.length === 0 && (
-                    <p className="text-xs text-slate-500 text-center py-6">{t.noSearchResults}</p>
-                  )}
+                  {searchQuery.trim() === '' && <p className="text-xs text-slate-500 text-center py-6">{t.searchHint}</p>}
+                  {searchQuery.trim() !== '' && filteredSearchResults.length === 0 && <p className="text-xs text-slate-500 text-center py-6">{t.noSearchResults}</p>}
                   {filteredSearchResults.map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => goToTab(item.tab)}
-                      className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-zinc-800 flex items-center justify-between gap-2 transition-all"
-                    >
+                    <button key={item.id} onClick={() => goToTab(item.tab)} className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-zinc-800 flex items-center justify-between gap-2 transition-all">
                       <span className="text-xs text-slate-200 truncate">{item.title}</span>
                       <span className="text-[10px] shrink-0 px-2 py-0.5 rounded bg-zinc-800 text-slate-400 border border-zinc-700">{item.type}</span>
                     </button>
@@ -826,74 +707,72 @@
 
           {}
           {isJournalModalOpen && (
-            <div
-              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4"
-              onClick={() => setIsJournalModalOpen(false)}
-            >
-              <div
-                className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto animate-fadeIn"
-                onClick={(e) => e.stopPropagation()}
-              >
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4" onClick={() => setIsJournalModalOpen(false)}>
+              <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto animate-fadeIn" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                   <h3 className="font-bold text-sm text-slate-100">{t.writeJournalEntry}</h3>
-                  <button onClick={() => setIsJournalModalOpen(false)} className="p-1 text-slate-400 hover:text-white">
-                    <Icon name="x" className="w-4 h-4" />
-                  </button>
+                  <button onClick={() => setIsJournalModalOpen(false)} className="p-1 text-slate-400 hover:text-white"><Icon name="x" className="w-4 h-4" /></button>
                 </div>
-
                 <div className="space-y-3">
                   {[
-                    { key: 'whatWentWell', label: t.whatWentWell },
-                    { key: 'whatWentWrong', label: t.whatWentWrong },
-                    { key: 'whatILearned', label: t.whatILearned },
-                    { key: 'whatToImprove', label: t.whatToImprove }
+                    { key: 'whatWentWell', label: t.whatWentWell }, { key: 'whatWentWrong', label: t.whatWentWrong },
+                    { key: 'whatILearned', label: t.whatILearned }, { key: 'whatToImprove', label: t.whatToImprove }
                   ].map(field => (
                     <div key={field.key}>
                       <label className="text-[11px] font-semibold text-slate-400">{field.label}</label>
-                      <textarea
-                        value={newJournal[field.key]}
-                        onChange={(e) => setNewJournal({ ...newJournal, [field.key]: e.target.value })}
-                        rows={2}
-                        className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500 resize-none"
-                      />
+                      <textarea value={newJournal[field.key]} onChange={e => setNewJournal({ ...newJournal, [field.key]: e.target.value })} rows={2}
+                        className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500 resize-none" />
                     </div>
                   ))}
-
                   <div className="grid grid-cols-2 gap-4 pt-1">
                     <div>
                       <label className="text-[11px] font-semibold text-slate-400">{t.energy} ({newJournal.energy}/5)</label>
-                      <input
-                        type="range" min="1" max="5"
-                        value={newJournal.energy}
-                        onChange={(e) => setNewJournal({ ...newJournal, energy: Number(e.target.value) })}
-                        className="w-full accent-amber-500"
-                      />
+                      <input type="range" min="1" max="5" value={newJournal.energy} onChange={e => setNewJournal({ ...newJournal, energy: Number(e.target.value) })} className="w-full accent-amber-500" />
                     </div>
                     <div>
                       <label className="text-[11px] font-semibold text-slate-400">{t.confidence} ({newJournal.confidence}/5)</label>
-                      <input
-                        type="range" min="1" max="5"
-                        value={newJournal.confidence}
-                        onChange={(e) => setNewJournal({ ...newJournal, confidence: Number(e.target.value) })}
-                        className="w-full accent-indigo-500"
-                      />
+                      <input type="range" min="1" max="5" value={newJournal.confidence} onChange={e => setNewJournal({ ...newJournal, confidence: Number(e.target.value) })} className="w-full accent-indigo-500" />
                     </div>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-2 pt-2">
-                  <button
-                    onClick={() => setIsJournalModalOpen(false)}
-                    className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-slate-300 font-bold text-xs hover:bg-zinc-700 transition-all"
-                  >
-                    {t.cancel}
-                  </button>
-                  <button
-                    onClick={addJournalEntry}
-                    className="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all"
-                  >
-                    {t.save}
-                  </button>
+                  <button onClick={() => setIsJournalModalOpen(false)} className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-slate-300 font-bold text-xs hover:bg-zinc-700 transition-all">{t.cancel}</button>
+                  <button onClick={addJournalEntry} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all">{t.save}</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {}
+          {isDealModalOpen && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4" onClick={() => setIsDealModalOpen(false)}>
+              <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-fadeIn" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                  <h3 className="font-bold text-sm text-slate-100">{t.addDeal}</h3>
+                  <button onClick={() => setIsDealModalOpen(false)} className="p-1 text-slate-400 hover:text-white"><Icon name="x" className="w-4 h-4" /></button>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-400">{t.dealName}</label>
+                    <input autoFocus value={newDeal.name} onChange={e => setNewDeal({ ...newDeal, name: e.target.value })}
+                      className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-400">{t.dealValue}</label>
+                    <input type="number" value={newDeal.value} onChange={e => setNewDeal({ ...newDeal, value: e.target.value })}
+                      className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-400">{t.pipeline}</label>
+                    <select value={newDeal.stage} onChange={e => setNewDeal({ ...newDeal, stage: e.target.value })}
+                      className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500">
+                      {STAGES.map(s => <option key={s} value={s}>{t['stage' + s]}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 pt-2">
+                  <button onClick={() => setIsDealModalOpen(false)} className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-slate-300 font-bold text-xs hover:bg-zinc-700 transition-all">{t.cancel}</button>
+                  <button onClick={addDeal} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all">{t.save}</button>
                 </div>
               </div>
             </div>
@@ -905,33 +784,16 @@
               <div className="w-full max-w-md bg-zinc-900 border-l border-zinc-800 h-full p-6 flex flex-col justify-between space-y-4">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-                    <div className="flex items-center gap-2">
-                      <Icon name="bot" className="w-5 h-5 text-indigo-400" />
-                      <h3 className="font-bold text-slate-100">{t.aiCoach}</h3>
-                    </div>
-                    <button onClick={() => setIsAICoachOpen(false)} className="p-1 text-slate-400 hover:text-white">
-                      <Icon name="x" className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center gap-2"><Icon name="bot" className="w-5 h-5 text-indigo-400" /><h3 className="font-bold text-slate-100">{t.aiCoach}</h3></div>
+                    <button onClick={() => setIsAICoachOpen(false)} className="p-1 text-slate-400 hover:text-white"><Icon name="x" className="w-5 h-5" /></button>
                   </div>
-
                   {isAiLoading ? (
-                    <div className="flex items-center justify-center py-12 text-xs text-amber-400 gap-2">
-                      <Icon name="sparkles" className="w-4 h-4 animate-spin" />
-                      <span>{t.aiAnalyzing}</span>
-                    </div>
+                    <div className="flex items-center justify-center py-12 text-xs text-amber-400 gap-2"><Icon name="sparkles" className="w-4 h-4 animate-spin" /><span>{t.aiAnalyzing}</span></div>
                   ) : (
-                    <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs text-slate-200 leading-relaxed whitespace-pre-line">
-                      {aiCoachResponse}
-                    </div>
+                    <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs text-slate-200 leading-relaxed whitespace-pre-line">{aiCoachResponse}</div>
                   )}
                 </div>
-
-                <button 
-                  onClick={() => setIsAICoachOpen(false)}
-                  className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all"
-                >
-                  {t.applyCoaching}
-                </button>
+                <button onClick={() => setIsAICoachOpen(false)} className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all">{t.applyCoaching}</button>
               </div>
             </div>
           )}
@@ -940,22 +802,18 @@
           <div className={`fixed bottom-6 ${isRTL ? 'left-6' : 'right-6'} z-40 flex flex-col items-end gap-2`}>
             {isFABOpen && (
               <div className="flex flex-col gap-2 animate-fadeIn">
-                <button onClick={() => goToTab('callReviews')} className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-slate-200 hover:border-amber-500 shadow-lg flex items-center gap-2">
-                  <Icon name="phoneCall" className="w-3.5 h-3.5 text-amber-400" /> {t.logCall}
+                <button onClick={() => { setIsFABOpen(false); setIsJournalModalOpen(true); }} className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-slate-200 hover:border-amber-500 shadow-lg flex items-center gap-2">
+                  <Icon name="bookMarked" className="w-3.5 h-3.5 text-amber-400" />{t.writeJournalEntry}
                 </button>
                 <button onClick={() => goToTab('habits')} className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-slate-200 hover:border-amber-500 shadow-lg flex items-center gap-2">
-                  <Icon name="repeat" className="w-3.5 h-3.5 text-cyan-400" /> {t.addHabit}
+                  <Icon name="repeat" className="w-3.5 h-3.5 text-cyan-400" />{t.addHabit}
                 </button>
-                <button onClick={() => goToTab('objections')} className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-slate-200 hover:border-amber-500 shadow-lg flex items-center gap-2">
-                  <Icon name="shieldAlert" className="w-3.5 h-3.5 text-rose-400" /> {t.addObjection}
+                <button onClick={() => { setIsFABOpen(false); setIsDealModalOpen(true); }} className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-slate-200 hover:border-amber-500 shadow-lg flex items-center gap-2">
+                  <Icon name="kanban" className="w-3.5 h-3.5 text-rose-400" />{t.addDeal}
                 </button>
               </div>
             )}
-            <button
-              onClick={() => setIsFABOpen(!isFABOpen)}
-              className="w-14 h-14 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-2xl flex items-center justify-center transition-all"
-              title={t.quickAction}
-            >
+            <button onClick={() => setIsFABOpen(!isFABOpen)} className="w-14 h-14 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-2xl flex items-center justify-center transition-all" title={t.quickAction}>
               <Icon name={isFABOpen ? 'x' : 'plus'} className="w-6 h-6" />
             </button>
           </div>
