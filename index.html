@@ -184,7 +184,7 @@
         noAccountYet: "Don't have an account?", haveAccountAlready: "Already have an account?",
         loggingIn: "Logging in...", signingUp: "Creating account...",
         logout: "Log Out", loadingYourData: "Loading your data...",
-        localModeNotice: "Built-in accounts mode — works instantly, no setup. For production use across any website/device, connect Supabase (see code comments).",
+        localModeNotice: "Built-in accounts mode — works instantly, no setup. Data is saved in THIS browser only. To sync across devices, connect Supabase (see code comments).",
         authGenericError: "Something went wrong. Please try again.",
         checkEmailConfirm: "Account created. If email confirmation is on, check your inbox before logging in.",
 
@@ -206,7 +206,7 @@
         emailTaken: "This email already has an account — try logging in instead.",
         accountNotFound: "No account found with this email.",
         wrongPassword: "Incorrect password.",
-        localModeAuthNotice: "Simple built-in accounts — great for a quick team tool. Please don't reuse a sensitive password here."
+        localModeAuthNotice: "Simple built-in accounts saved in this browser only (not synced across devices). Please don't reuse a sensitive password here."
       },
       ar: {
         appName: "Sales OS", appSub: "نظام التشغيل الشخصي للمبيعات",
@@ -262,7 +262,7 @@
         noAccountYet: "لسه معندكش حساب؟", haveAccountAlready: "عندك حساب بالفعل؟",
         loggingIn: "جاري تسجيل الدخول...", signingUp: "جاري إنشاء الحساب...",
         logout: "تسجيل الخروج", loadingYourData: "جاري تحميل بياناتك...",
-        localModeNotice: "وضع الحسابات المدمجة — شغّال فورًا بدون إعداد. لو عايز استخدام إنتاجي على أي موقع/جهاز، اربط Supabase (شوف تعليقات الكود).",
+        localModeNotice: "وضع الحسابات المدمجة — شغّال فورًا بدون إعداد. البيانات محفوظة في المتصفح ده بس. لو عايز مزامنة بين الأجهزة، اربط Supabase (شوف تعليقات الكود).",
         authGenericError: "حصل خطأ، حاول تاني.",
         checkEmailConfirm: "تم إنشاء الحساب. لو تأكيد الإيميل مفعّل، افتح بريدك قبل تسجيل الدخول.",
 
@@ -284,7 +284,7 @@
         emailTaken: "الإيميل ده مسجّل بالفعل — جرّب تسجيل الدخول بدل الإنشاء.",
         accountNotFound: "مفيش حساب بالإيميل ده.",
         wrongPassword: "كلمة المرور غلط.",
-        localModeAuthNotice: "حسابات مدمجة بسيطة — مناسبة لأداة فريق سريعة. من فضلك متستخدمش باسورد حساس هنا."
+        localModeAuthNotice: "حسابات مدمجة بسيطة، محفوظة في المتصفح ده بس (مش متزامنة بين الأجهزة). من فضلك متستخدمش باسورد حساس هنا."
       }
     };
 
@@ -432,38 +432,47 @@
     }
 
     // ============ ZERO-SETUP LOCAL ACCOUNTS (used automatically when Supabase isn't configured) ============
-    // Stores accounts + each user's data using Claude's built-in artifact storage. No external service needed.
+    // Stores accounts + each user's data in this browser's localStorage. No external service, no server needed —
+    // works right away on GitHub Pages or any static host. Trade-off: accounts/data live in THIS browser only,
+    // so they won't follow the user to a different device or browser. For that, connect Supabase (see comments above).
     // Note: this is a lightweight solution for internal/team use, not bank-grade security —
-    // passwords are stored as-is in shared storage, so ask people not to reuse a sensitive password here.
+    // passwords are stored as-is, so ask people not to reuse a sensitive password here.
+    const LS_ACCOUNTS_KEY = 'sales_os_accounts';
+    const LS_SESSION_KEY = 'sales_os_session';
+    const LS_DATA_PREFIX = 'sales_os_data:';
+
+    function readAccounts() {
+      try { return JSON.parse(localStorage.getItem(LS_ACCOUNTS_KEY) || '{}'); } catch (e) { return {}; }
+    }
+    function writeAccounts(accounts) {
+      localStorage.setItem(LS_ACCOUNTS_KEY, JSON.stringify(accounts));
+    }
+
     async function localSignup(email, password) {
-      const key = 'account:' + email.toLowerCase();
-      let exists = true;
-      try { await window.storage.get(key, true); } catch (e) { exists = false; }
-      if (exists) throw new Error('EMAIL_TAKEN');
-      await window.storage.set(key, JSON.stringify({ email, password, createdAt: Date.now() }), true);
-      await window.storage.set('data:' + email.toLowerCase(), JSON.stringify({
+      const id = email.toLowerCase();
+      const accounts = readAccounts();
+      if (accounts[id]) throw new Error('EMAIL_TAKEN');
+      accounts[id] = { email, password, createdAt: Date.now() };
+      writeAccounts(accounts);
+      localStorage.setItem(LS_DATA_PREFIX + id, JSON.stringify({
         habits: INITIAL_HABITS, journalEntries: INITIAL_JOURNAL, tasks: INITIAL_TASKS, deals: INITIAL_DEALS, calcForm: DEFAULT_CALC_FORM
-      }), true);
-      await window.storage.set('currentSession', email.toLowerCase(), false);
-      return { id: email.toLowerCase(), email };
+      }));
+      localStorage.setItem(LS_SESSION_KEY, id);
+      return { id, email };
     }
 
     async function localLogin(email, password) {
-      const key = 'account:' + email.toLowerCase();
-      let record;
-      try {
-        const res = await window.storage.get(key, true);
-        record = JSON.parse(res.value);
-      } catch (e) {
-        throw new Error('NOT_FOUND');
-      }
+      const id = email.toLowerCase();
+      const accounts = readAccounts();
+      const record = accounts[id];
+      if (!record) throw new Error('NOT_FOUND');
       if (record.password !== password) throw new Error('WRONG_PASSWORD');
-      await window.storage.set('currentSession', email.toLowerCase(), false);
-      return { id: email.toLowerCase(), email };
+      localStorage.setItem(LS_SESSION_KEY, id);
+      return { id, email: record.email };
     }
 
     async function localLogout() {
-      try { await window.storage.delete('currentSession', false); } catch (e) {}
+      localStorage.removeItem(LS_SESSION_KEY);
     }
 
     function App({ session, onLogout }) {
@@ -550,8 +559,8 @@
             if (!error && data && data.data) saved = data.data;
           } else {
             try {
-              const res = await window.storage.get('data:' + session.id, true);
-              saved = JSON.parse(res.value);
+              const raw = localStorage.getItem(LS_DATA_PREFIX + session.id);
+              saved = raw ? JSON.parse(raw) : null;
             } catch (e) { saved = null; }
           }
           if (cancelled) return;
@@ -564,7 +573,7 @@
           } else {
             const fresh = { habits: INITIAL_HABITS, journalEntries: INITIAL_JOURNAL, tasks: INITIAL_TASKS, deals: INITIAL_DEALS, calcForm: DEFAULT_CALC_FORM };
             if (SUPABASE_READY) await supabaseClient.from('user_data').upsert({ user_id: session.id, data: fresh });
-            else await window.storage.set('data:' + session.id, JSON.stringify(fresh), true);
+            else localStorage.setItem(LS_DATA_PREFIX + session.id, JSON.stringify(fresh));
           }
           dataLoadedRef.current = true;
           setIsLoadingData(false);
@@ -581,7 +590,7 @@
           if (SUPABASE_READY) {
             supabaseClient.from('user_data').upsert({ user_id: session.id, data: payload, updated_at: new Date().toISOString() });
           } else {
-            window.storage.set('data:' + session.id, JSON.stringify(payload), true);
+            localStorage.setItem(LS_DATA_PREFIX + session.id, JSON.stringify(payload));
           }
         }, 800);
         return () => clearTimeout(saveTimerRef.current);
@@ -1541,14 +1550,18 @@
           });
           return () => listener.subscription.unsubscribe();
         } else {
-          (async () => {
-            try {
-              const res = await window.storage.get('currentSession', false);
-              setSession({ id: res.value, email: res.value });
-            } catch (e) {
+          try {
+            const id = localStorage.getItem(LS_SESSION_KEY);
+            if (id) {
+              const accounts = readAccounts();
+              const record = accounts[id];
+              setSession(record ? { id, email: record.email } : null);
+            } else {
               setSession(null);
             }
-          })();
+          } catch (e) {
+            setSession(null);
+          }
         }
       }, []);
 
