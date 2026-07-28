@@ -184,7 +184,7 @@
         noAccountYet: "Don't have an account?", haveAccountAlready: "Already have an account?",
         loggingIn: "Logging in...", signingUp: "Creating account...",
         logout: "Log Out", loadingYourData: "Loading your data...",
-        localModeNotice: "Local preview mode — connect Supabase (see code comments) to enable accounts & saving across devices.",
+        localModeNotice: "Built-in accounts mode — works instantly, no setup. For production use across any website/device, connect Supabase (see code comments).",
         authGenericError: "Something went wrong. Please try again.",
         checkEmailConfirm: "Account created. If email confirmation is on, check your inbox before logging in.",
 
@@ -200,7 +200,13 @@
         todaysCallPace: "Today's pace", addTodayTasks: "Add to Priority Matrix",
         progressSoFar: "Closed so far", remainingToGoal: "Remaining to goal",
         targetAchieved: "🎉 Target achieved! Great work.", tasksAddedToMatrix: "Added to your Priority Matrix",
-        todaysSnapshot: "Today's snapshot", callsCompleted: "Calls completed", dealsWonLabel: "Deals won"
+        dealWonToast: "🎉 Deal won! Your target progress just updated.",
+        todaysSnapshot: "Today's snapshot", callsCompleted: "Calls completed", dealsWonLabel: "Deals won",
+
+        emailTaken: "This email already has an account — try logging in instead.",
+        accountNotFound: "No account found with this email.",
+        wrongPassword: "Incorrect password.",
+        localModeAuthNotice: "Simple built-in accounts — great for a quick team tool. Please don't reuse a sensitive password here."
       },
       ar: {
         appName: "Sales OS", appSub: "نظام التشغيل الشخصي للمبيعات",
@@ -256,7 +262,7 @@
         noAccountYet: "لسه معندكش حساب؟", haveAccountAlready: "عندك حساب بالفعل؟",
         loggingIn: "جاري تسجيل الدخول...", signingUp: "جاري إنشاء الحساب...",
         logout: "تسجيل الخروج", loadingYourData: "جاري تحميل بياناتك...",
-        localModeNotice: "وضع تجريبي محلي — اربط Supabase (شوف تعليقات الكود) لتفعيل الحسابات والحفظ من أي جهاز.",
+        localModeNotice: "وضع الحسابات المدمجة — شغّال فورًا بدون إعداد. لو عايز استخدام إنتاجي على أي موقع/جهاز، اربط Supabase (شوف تعليقات الكود).",
         authGenericError: "حصل خطأ، حاول تاني.",
         checkEmailConfirm: "تم إنشاء الحساب. لو تأكيد الإيميل مفعّل، افتح بريدك قبل تسجيل الدخول.",
 
@@ -272,7 +278,13 @@
         todaysCallPace: "معدل اليوم", addTodayTasks: "إضافة لمصفوفة الأولويات",
         progressSoFar: "المُحصّل لحد دلوقتي", remainingToGoal: "المتبقي للهدف",
         targetAchieved: "🎉 وصلت للتارجت! عمل ممتاز.", tasksAddedToMatrix: "اتضافت لمصفوفة الأولويات",
-        todaysSnapshot: "لمحة سريعة عن اليوم", callsCompleted: "مكالمات مكتملة", dealsWonLabel: "صفقات مكسوبة"
+        dealWonToast: "🎉 صفقة اتكسبت! تقدّم التارجت اتحدّث.",
+        todaysSnapshot: "لمحة سريعة عن اليوم", callsCompleted: "مكالمات مكتملة", dealsWonLabel: "صفقات مكسوبة",
+
+        emailTaken: "الإيميل ده مسجّل بالفعل — جرّب تسجيل الدخول بدل الإنشاء.",
+        accountNotFound: "مفيش حساب بالإيميل ده.",
+        wrongPassword: "كلمة المرور غلط.",
+        localModeAuthNotice: "حسابات مدمجة بسيطة — مناسبة لأداة فريق سريعة. من فضلك متستخدمش باسورد حساس هنا."
       }
     };
 
@@ -341,7 +353,7 @@
     const EMPTY_TASK_FORM = { title: '', duration: 15, category: 'Call', priority: 'Medium' };
     const DEFAULT_CALC_FORM = { targetRevenue: '', avgDealValue: '', closeRate: '', meetingRate: '', workingDays: '' };
 
-    function AuthScreen({ t, isRTL, onAuthed }) {
+    function AuthScreen({ t, isRTL, onLogin, onSignup, localMode }) {
       const [mode, setMode] = useState('login');
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
@@ -354,17 +366,15 @@
         setBusy(true); setError(''); setInfo('');
         try {
           if (mode === 'login') {
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email: email.trim(), password });
-            if (error) throw error;
-            onAuthed(data.session);
+            await onLogin(email.trim(), password);
           } else {
-            const { data, error } = await supabaseClient.auth.signUp({ email: email.trim(), password });
-            if (error) throw error;
-            if (data.session) onAuthed(data.session);
-            else setInfo(t.checkEmailConfirm);
+            const result = await onSignup(email.trim(), password);
+            if (result === 'PENDING_EMAIL_CONFIRM') setInfo(t.checkEmailConfirm);
           }
         } catch (err) {
-          setError(err.message || t.authGenericError);
+          const code = err && err.message;
+          const map = { EMAIL_TAKEN: t.emailTaken, NOT_FOUND: t.accountNotFound, WRONG_PASSWORD: t.wrongPassword };
+          setError(map[code] || code || t.authGenericError);
         } finally {
           setBusy(false);
         }
@@ -382,6 +392,10 @@
                 <span className="text-[10px] text-amber-400 font-medium tracking-wide">{mode === 'login' ? t.welcomeBack : t.createAccount}</span>
               </div>
             </div>
+
+            {localMode && (
+              <p className="text-[10px] text-slate-500 bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-2 leading-relaxed">{t.localModeAuthNotice}</p>
+            )}
 
             <div className="space-y-3">
               <div>
@@ -417,6 +431,41 @@
       );
     }
 
+    // ============ ZERO-SETUP LOCAL ACCOUNTS (used automatically when Supabase isn't configured) ============
+    // Stores accounts + each user's data using Claude's built-in artifact storage. No external service needed.
+    // Note: this is a lightweight solution for internal/team use, not bank-grade security —
+    // passwords are stored as-is in shared storage, so ask people not to reuse a sensitive password here.
+    async function localSignup(email, password) {
+      const key = 'account:' + email.toLowerCase();
+      let exists = true;
+      try { await window.storage.get(key, true); } catch (e) { exists = false; }
+      if (exists) throw new Error('EMAIL_TAKEN');
+      await window.storage.set(key, JSON.stringify({ email, password, createdAt: Date.now() }), true);
+      await window.storage.set('data:' + email.toLowerCase(), JSON.stringify({
+        habits: INITIAL_HABITS, journalEntries: INITIAL_JOURNAL, tasks: INITIAL_TASKS, deals: INITIAL_DEALS, calcForm: DEFAULT_CALC_FORM
+      }), true);
+      await window.storage.set('currentSession', email.toLowerCase(), false);
+      return { id: email.toLowerCase(), email };
+    }
+
+    async function localLogin(email, password) {
+      const key = 'account:' + email.toLowerCase();
+      let record;
+      try {
+        const res = await window.storage.get(key, true);
+        record = JSON.parse(res.value);
+      } catch (e) {
+        throw new Error('NOT_FOUND');
+      }
+      if (record.password !== password) throw new Error('WRONG_PASSWORD');
+      await window.storage.set('currentSession', email.toLowerCase(), false);
+      return { id: email.toLowerCase(), email };
+    }
+
+    async function localLogout() {
+      try { await window.storage.delete('currentSession', false); } catch (e) {}
+    }
+
     function App({ session, onLogout }) {
       const [lang, setLang] = useState('en');
       const [theme, setTheme] = useState('dark');
@@ -449,6 +498,13 @@
       const [calcForm, setCalcForm] = useState(DEFAULT_CALC_FORM);
 
       const [expandedDealId, setExpandedDealId] = useState(null);
+      const [toast, setToast] = useState(null);
+      const toastTimerRef = useRef(null);
+      const showToast = (message) => {
+        setToast(message);
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = setTimeout(() => setToast(null), 2800);
+      };
       const [noteDrafts, setNoteDrafts] = useState({});
 
       const [isLoadingData, setIsLoadingData] = useState(!!session);
@@ -484,24 +540,31 @@
         let cancelled = false;
         (async () => {
           setIsLoadingData(true);
-          const { data, error } = await supabaseClient
-            .from('user_data')
-            .select('data')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
+          let saved = null;
+          if (SUPABASE_READY) {
+            const { data, error } = await supabaseClient
+              .from('user_data')
+              .select('data')
+              .eq('user_id', session.id)
+              .maybeSingle();
+            if (!error && data && data.data) saved = data.data;
+          } else {
+            try {
+              const res = await window.storage.get('data:' + session.id, true);
+              saved = JSON.parse(res.value);
+            } catch (e) { saved = null; }
+          }
           if (cancelled) return;
-          if (!error && data && data.data) {
-            const saved = data.data;
+          if (saved) {
             if (saved.habits) setHabits(saved.habits);
             if (saved.journalEntries) setJournalEntries(saved.journalEntries);
             if (saved.tasks) setTasks(saved.tasks);
             if (saved.deals) setDeals(saved.deals);
             if (saved.calcForm) setCalcForm(saved.calcForm);
           } else {
-            await supabaseClient.from('user_data').upsert({
-              user_id: session.user.id,
-              data: { habits: INITIAL_HABITS, journalEntries: INITIAL_JOURNAL, tasks: INITIAL_TASKS, deals: INITIAL_DEALS, calcForm: DEFAULT_CALC_FORM }
-            });
+            const fresh = { habits: INITIAL_HABITS, journalEntries: INITIAL_JOURNAL, tasks: INITIAL_TASKS, deals: INITIAL_DEALS, calcForm: DEFAULT_CALC_FORM };
+            if (SUPABASE_READY) await supabaseClient.from('user_data').upsert({ user_id: session.id, data: fresh });
+            else await window.storage.set('data:' + session.id, JSON.stringify(fresh), true);
           }
           dataLoadedRef.current = true;
           setIsLoadingData(false);
@@ -514,11 +577,12 @@
         if (!session || !dataLoadedRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
-          supabaseClient.from('user_data').upsert({
-            user_id: session.user.id,
-            data: { habits, journalEntries, tasks, deals, calcForm },
-            updated_at: new Date().toISOString()
-          });
+          const payload = { habits, journalEntries, tasks, deals, calcForm };
+          if (SUPABASE_READY) {
+            supabaseClient.from('user_data').upsert({ user_id: session.id, data: payload, updated_at: new Date().toISOString() });
+          } else {
+            window.storage.set('data:' + session.id, JSON.stringify(payload), true);
+          }
         }, 800);
         return () => clearTimeout(saveTimerRef.current);
       }, [habits, journalEntries, tasks, deals, calcForm, session]);
@@ -572,7 +636,10 @@
         if (expandedDealId === id) setExpandedDealId(null);
       };
 
-      const updateDealStage = (id, stage) => setDeals(deals.map(d => d.id === id ? { ...d, stage } : d));
+      const updateDealStage = (id, stage) => {
+        setDeals(deals.map(d => d.id === id ? { ...d, stage } : d));
+        if (stage === 'Won') showToast(t.dealWonToast);
+      };
 
       const addNoteToDeal = (dealId) => {
         const draft = noteDrafts[dealId];
@@ -676,9 +743,13 @@
         if (!calcResults || !calcResults.remaining || !calcResults.remaining.perDay) return;
         const pace = calcResults.remaining.perDay;
         const newTasks = [];
-        if (pace.calls) newTasks.push({ id: 't' + Date.now() + 'c', title: `${t.callsNeeded}: ${pace.calls}`, duration: 20, completed: false, category: 'Call', priority: 'High' });
-        if (pace.visits) newTasks.push({ id: 't' + Date.now() + 'v', title: `${t.visitsNeeded}: ${pace.visits}`, duration: 45, completed: false, category: 'Followup', priority: 'High' });
-        if (newTasks.length) setTasks([...tasks, ...newTasks]);
+        if (pace.calls) newTasks.push({ id: 't' + Date.now() + 'c', title: `${t.callsNeeded}: ${pace.calls}`, duration: 20, completed: false, category: 'Call', priority: 'High', fromCalculator: true });
+        if (pace.visits) newTasks.push({ id: 't' + Date.now() + 'v', title: `${t.visitsNeeded}: ${pace.visits}`, duration: 45, completed: false, category: 'Followup', priority: 'High', fromCalculator: true });
+        if (newTasks.length) {
+          setTasks([...tasks, ...newTasks]);
+          showToast(t.tasksAddedToMatrix);
+          setCurrentTab('dashboard');
+        }
       };
 
       const tasksByPriority = useMemo(() => {
@@ -688,7 +759,7 @@
       }, [tasks]);
 
       const TaskCard = ({ tk }) => (
-        <div className="group-item p-3 rounded-xl border bg-zinc-800/40 border-zinc-700/50 space-y-2">
+        <div className={`group-item p-3 rounded-xl border bg-zinc-800/40 space-y-2 ${tk.fromCalculator ? 'border-amber-500/40 ring-1 ring-amber-500/10' : 'border-zinc-700/50'}`}>
           <div className="flex items-start gap-2.5">
             <button onClick={() => toggleTask(tk.id)}
               className={`w-5 h-5 mt-0.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${tk.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950 font-bold' : 'border-slate-600'}`}>
@@ -701,6 +772,11 @@
                   <Icon name={CATEGORY_ICONS[tk.category] || 'tag'} className="w-2.5 h-2.5" />{t['category' + tk.category]}
                 </span>
                 <span className="text-[10px] text-slate-400">{tk.duration}m</span>
+                {tk.fromCalculator && (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold text-amber-400 bg-amber-500/10" title={t.targetCalc}>
+                    <Icon name="calculator" className="w-2.5 h-2.5" />
+                  </span>
+                )}
               </div>
             </div>
             <button onClick={() => deleteTask(tk.id)} className="reveal-on-hover shrink-0 p-1 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
@@ -742,7 +818,7 @@
 
               {session && (
                 <div className="p-2.5 mb-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-between gap-2">
-                  <span className="text-[10px] text-slate-400 truncate">{session.user.email}</span>
+                  <span className="text-[10px] text-slate-400 truncate">{session.email}</span>
                   <button onClick={onLogout} className="text-[10px] font-bold text-rose-400 hover:underline shrink-0">{t.logout}</button>
                 </div>
               )}
@@ -1103,9 +1179,19 @@
               {}
               {currentTab === 'calculator' && (
                 <div className="space-y-6 animate-fadeIn">
-                  <div>
-                    <h2 className="text-lg font-bold">{t.targetCalc}</h2>
-                    <p className="text-xs text-slate-400">{t.targetCalcSub}</p>
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <h2 className="text-lg font-bold">{t.targetCalc}</h2>
+                      <p className="text-xs text-slate-400">{t.targetCalcSub}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setCurrentTab('dashboard')} className="px-2.5 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-[11px] font-semibold text-slate-300 hover:border-amber-500/50 flex items-center gap-1.5 transition-all">
+                        <Icon name="grid" className="w-3.5 h-3.5 text-amber-400" />{t.topPriorities}
+                      </button>
+                      <button onClick={() => setCurrentTab('pipeline')} className="px-2.5 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-[11px] font-semibold text-slate-300 hover:border-amber-500/50 flex items-center gap-1.5 transition-all">
+                        <Icon name="kanban" className="w-3.5 h-3.5 text-rose-400" />{t.pipeline}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1407,6 +1493,13 @@
           )}
 
           {}
+          {toast && (
+            <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-zinc-900 border border-amber-500/40 shadow-2xl text-xs font-semibold text-slate-100 animate-fadeIn">
+              {toast}
+            </div>
+          )}
+
+          {}
           <div className={`fixed bottom-6 ${isRTL ? 'left-6' : 'right-6'} z-40 flex flex-col items-end gap-2`}>
             {isFABOpen && (
               <div className="flex flex-col gap-2 animate-fadeIn">
@@ -1439,17 +1532,25 @@
       const [session, setSession] = useState(undefined); // undefined = checking, null = logged out
 
       useEffect(() => {
-        if (!SUPABASE_READY) { setSession(null); return; }
-        supabaseClient.auth.getSession().then(({ data }) => setSession(data.session));
-        const { data: listener } = supabaseClient.auth.onAuthStateChange((_event, newSession) => {
-          setSession(newSession);
-        });
-        return () => listener.subscription.unsubscribe();
+        if (SUPABASE_READY) {
+          supabaseClient.auth.getSession().then(({ data }) => {
+            setSession(data.session ? { id: data.session.user.id, email: data.session.user.email } : null);
+          });
+          const { data: listener } = supabaseClient.auth.onAuthStateChange((_event, newSession) => {
+            setSession(newSession ? { id: newSession.user.id, email: newSession.user.email } : null);
+          });
+          return () => listener.subscription.unsubscribe();
+        } else {
+          (async () => {
+            try {
+              const res = await window.storage.get('currentSession', false);
+              setSession({ id: res.value, email: res.value });
+            } catch (e) {
+              setSession(null);
+            }
+          })();
+        }
       }, []);
-
-      if (!SUPABASE_READY) {
-        return <App session={null} onLogout={() => {}} />;
-      }
 
       if (session === undefined) {
         return (
@@ -1460,10 +1561,36 @@
       }
 
       if (session === null) {
-        return <AuthScreen t={t} isRTL={false} onAuthed={setSession} />;
+        if (SUPABASE_READY) {
+          return (
+            <AuthScreen t={t} isRTL={false} localMode={false}
+              onLogin={async (email, password) => {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                setSession({ id: data.session.user.id, email: data.session.user.email });
+              }}
+              onSignup={async (email, password) => {
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) throw error;
+                if (data.session) { setSession({ id: data.session.user.id, email: data.session.user.email }); return; }
+                return 'PENDING_EMAIL_CONFIRM';
+              }} />
+          );
+        }
+        return (
+          <AuthScreen t={t} isRTL={false} localMode={true}
+            onLogin={async (email, password) => setSession(await localLogin(email, password))}
+            onSignup={async (email, password) => setSession(await localSignup(email, password))} />
+        );
       }
 
-      return <App session={session} onLogout={() => supabaseClient.auth.signOut()} />;
+      return (
+        <App session={session} onLogout={async () => {
+          if (SUPABASE_READY) await supabaseClient.auth.signOut();
+          else await localLogout();
+          setSession(null);
+        }} />
+      );
     }
 
     const rootElement = document.getElementById('root');
