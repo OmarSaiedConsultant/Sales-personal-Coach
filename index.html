@@ -819,12 +819,6 @@
                 </div>
               </div>
 
-              {!SUPABASE_READY && (
-                <div className="p-2.5 mb-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-[10px] font-medium text-rose-300">
-                  {t.localModeNotice}
-                </div>
-              )}
-
               {session && (
                 <div className="p-2.5 mb-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-between gap-2">
                   <span className="text-[10px] text-slate-400 truncate">{session.email}</span>
