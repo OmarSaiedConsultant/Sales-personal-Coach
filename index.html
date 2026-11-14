@@ -1,59 +1,103 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" class="dark">
+<html lang="ar" dir="rtl" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sales OS - Personal Sales Operating System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Sales OS - نظام التشغيل الشخصي للمبيعات</title>
 
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: { extend: { colors: { brand: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' } } } }
-    }
+      theme: {
+        extend: {
+          colors: {
+            brand: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' }
+          }
+        }
+      }
+    };
   </script>
 
+  <!-- React 18, Babel & Supabase CDN -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
+  <!-- Google Font: Cairo for Luxury Arabic & Inter for English -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
+    :root {
+      font-family: 'Cairo', 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    html[dir="ltr"] {
+      font-family: 'Inter', 'Cairo', system-ui, -apple-system, sans-serif;
+    }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
     ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.4); border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.7); }
-    .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fadeIn { animation: fadeIn 0.22s ease-out forwards; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .group-item:hover .reveal-on-hover { opacity: 1; }
     .reveal-on-hover { opacity: 0; transition: opacity 0.15s ease; }
     @media (hover: none) { .reveal-on-hover { opacity: 1; } }
   </style>
 </head>
-<body class="bg-[#09090b] text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950">
+<body class="bg-[#09090b] text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950 transition-colors duration-200">
   <div id="root"></div>
 
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
 
-    // ============ ACCOUNTS / SAVING SETUP ============
-    // 1) Create a free project at https://supabase.com
-    // 2) Copy your Project URL and anon public key below
-    // 3) In the SQL editor, run:
-    //    create table user_data (
-    //      user_id uuid references auth.users on delete cascade primary key,
-    //      data jsonb not null default '{}'::jsonb,
-    //      updated_at timestamptz default now()
-    //    );
-    //    alter table user_data enable row level security;
-    //    create policy "select own" on user_data for select using (auth.uid() = user_id);
-    //    create policy "insert own" on user_data for insert with check (auth.uid() = user_id);
-    //    create policy "update own" on user_data for update using (auth.uid() = user_id);
-    // 4) In Authentication > Providers > Email, turn OFF "Confirm email" so signup works instantly.
+    // ============ OPTIONAL SUPABASE CONFIGURATION ============
+    // If you want cloud syncing across devices, enter your Supabase credentials below.
+    // If left empty, Sales OS operates completely offline in LocalStorage (Zero setup needed).
     const SUPABASE_URL = "";
     const SUPABASE_ANON_KEY = "";
-    const SUPABASE_READY = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+    const SUPABASE_READY = !!(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
     const supabaseClient = SUPABASE_READY ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    // ============ LOCAL STORAGE KEYS ============
+    const LS_ACCOUNTS_KEY = 'sales_os_accounts';
+    const LS_SESSION_KEY = 'sales_os_session';
+    const LS_DATA_PREFIX = 'sales_os_data:';
+    const LS_LANG_KEY = 'sales_os_lang';
+    const LS_GEMINI_KEY = 'sales_os_gemini_key';
+    const GUEST_ID = 'guest_demo_user';
+
+    // Audio Chime synthesizer via Web Audio API (Zero external assets needed)
+    function playChimeSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.12);
+          osc.stop(now + idx * 0.12 + 0.35);
+        });
+      } catch (e) {
+        // AudioContext might be blocked until user gesture, safely ignore
+      }
+    }
 
     const Icon = ({ name, className = "w-4 h-4", flip = false }) => {
       const icons = {
@@ -90,7 +134,9 @@
         arrowRight: <path d="M5 12h14M13 6l6 6-6 6"/>,
         trash: <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-.87 14.14A2 2 0 0 1 16.14 22H7.86a2 2 0 0 1-1.99-1.86L5 6h14ZM10 11v6M14 11v6"/>,
         grid: <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>,
-        tag: <path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.41l8.83 8.83a2 2 0 0 0 2.83 0l7.17-7.17a2 2 0 0 0 0-2.83l-8.83-8.82ZM7 7h.01"/>
+        tag: <path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.41l8.83 8.83a2 2 0 0 0 2.83 0l7.17-7.17a2 2 0 0 0 0-2.83l-8.83-8.82ZM7 7h.01"/>,
+        user: <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>,
+        key: <path d="m21 2-2 2m-1.5 1.5L14 9M3 21l3-3m0 0 2-2m-2 2-2-2m4 4-2-2m8-8a5.5 5.5 0 1 0-7.78-7.78 5.5 5.5 0 0 0 7.78 7.78Z"/>
       };
       return (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
@@ -135,6 +181,12 @@
         questionOfDay: "How can I become a better salesperson today?",
         dashboard: "Today's Focus", focusMode: "Focus Mode", journal: "Sales Journal", habits: "Sales Habits", pipeline: "Deals & Pipeline",
 
+        guestMode: "Guest Demo Mode",
+        guestNotice: "You are exploring in Demo Mode. All your actions are saved in this browser. You can log in or create an account anytime to sync.",
+        loginOrSignup: "Log In / Sign Up",
+        continueAsGuest: "Continue as Guest (Demo)",
+        keepGuestData: "Keep current demo data and link to my account",
+
         topPriorities: "Priority Matrix", deepWorkTime: "Deep Work Time", completedTasks: "Completed Focus Items",
         monthlyTarget: "Monthly Revenue Goal", habitConsistency: "Habit Consistency",
         biggestWeakness: "Weekly Area for Growth", biggestOpportunity: "Today's Hot Opportunity",
@@ -168,9 +220,13 @@
         stageLead: "Lead", stageDiscovery: "Discovery", stageProposal: "Proposal",
         stageNegotiation: "Negotiation", stageWon: "Won", stageLost: "Lost",
 
-        aiCoach: "AI Sales Performance Coach", aiCoachSub: "Tap for instant deal coaching",
+        aiCoach: "AI Sales Performance Coach", aiCoachSub: "Instant executive sales debrief",
         aiAnalyzing: "Analyzing your sales activity...", applyCoaching: "Apply Coaching Strategy",
         aiNoDataNotice: "Add a few tasks, habits, or deals first so the coach has something real to analyze.",
+        aiLocalEngineBadge: "Built-in Tactical Analysis Engine",
+        aiGeminiLiveBadge: "Powered by Google Gemini Live",
+        apiKeyOptional: "Gemini API Key (Optional for cloud AI):",
+        saveApiKey: "Save Key",
 
         quickAction: "Quick Action",
         searchPlaceholder: "Search deals, habits, journal, tasks... (Press '/')",
@@ -192,7 +248,6 @@
         noAccountYet: "Don't have an account?", haveAccountAlready: "Already have an account?",
         loggingIn: "Logging in...", signingUp: "Creating account...",
         logout: "Log Out", loadingYourData: "Loading your data...",
-        localModeNotice: "Built-in accounts mode — works instantly, no setup. Data is saved in THIS browser only. To sync across devices, connect Supabase (see code comments).",
         authGenericError: "Something went wrong. Please try again.",
         checkEmailConfirm: "Account created. If email confirmation is on, check your inbox before logging in.",
 
@@ -214,12 +269,18 @@
         emailTaken: "This email already has an account — try logging in instead.",
         accountNotFound: "No account found with this email.",
         wrongPassword: "Incorrect password.",
-        localModeAuthNotice: "Simple built-in accounts saved in this browser only (not synced across devices). Please don't reuse a sensitive password here."
+        localModeAuthNotice: "Simple built-in accounts saved in this browser only."
       },
       ar: {
         appName: "Sales OS", appSub: "نظام التشغيل الشخصي للمبيعات",
         questionOfDay: "كيف يمكنني أن أصبح بائعاً أفضل اليوم؟",
         dashboard: "تركيز اليوم", focusMode: "وضع التركيز", journal: "يومية المبيعات", habits: "عادات المبيعات", pipeline: "الصفقات والعملاء",
+
+        guestMode: "وضع التجربة (ديمو)",
+        guestNotice: "أنت الآن تستخدم النظام كضيف (Demo). جميع بياناتك محفوظة في هذا المتصفح. يمكنك تسجيل الدخول أو إنشاء حساب في أي وقت للمزامنة.",
+        loginOrSignup: "تسجيل الدخول / إنشاء حساب",
+        continueAsGuest: "الاستمرار كضيف (تجربة فورية)",
+        keepGuestData: "الاحتفاظ ببيانات التجربة الحالية وربطها بالحساب الجديد",
 
         topPriorities: "مصفوفة الأولويات", deepWorkTime: "وقت العمل العميق", completedTasks: "المهام المكتملة",
         monthlyTarget: "هدف الإيرادات الشهري", habitConsistency: "ثبات العادات",
@@ -254,9 +315,13 @@
         stageLead: "عميل محتمل", stageDiscovery: "اكتشاف", stageProposal: "عرض سعر",
         stageNegotiation: "تفاوض", stageWon: "تم الفوز", stageLost: "خسارة",
 
-        aiCoach: "الموجه الذكي للبيع", aiCoachSub: "اضغط للحصول على تدريب فوري للصفقة",
-        aiAnalyzing: "جاري تحليل أدائك البيعي...", applyCoaching: "تطبيق استراتيجية التدريب",
-        aiNoDataNotice: "ضيف كام مهمة أو عادة أو صفقة الأول عشان يكون عند الموجه بيانات حقيقية يحللها.",
+        aiCoach: "الموجه البيعي الذكي", aiCoachSub: "تحليل تكتيكي فوري لأدائك وصفقاتك",
+        aiAnalyzing: "جاري تحليل نشاطك البيعي والصفقات...", applyCoaching: "تطبيق التوصيات التكتيكية",
+        aiNoDataNotice: "ضيف كام مهمة أو عادة أو صفقة عشان المحلل يقدر يقدم توصيات مخصصة.",
+        aiLocalEngineBadge: "المحرك التحليلي التكتيكي المدمج",
+        aiGeminiLiveBadge: "متصل بـ Google Gemini Live",
+        apiKeyOptional: "مفتاح Gemini API (اختياري للذكاء الاصطناعي المباشر):",
+        saveApiKey: "حفظ المفتاح",
 
         quickAction: "إجراء سريع",
         searchPlaceholder: "بحث في الصفقات والعادات واليومية والمهام... (اضغط '/')",
@@ -270,7 +335,7 @@
         categoryAdmin: "إداري", categoryLearning: "تعلّم",
         confirmDeleteTask: "حذف هذه المهمة؟", confirmDeleteHabit: "حذف هذه العادة؟",
         confirmDeleteDeal: "حذف هذه الصفقة وكل ملاحظاتها؟", confirmDeleteNote: "حذف هذه الملاحظة؟",
-        confirmDeleteJournal: "حذف هذا التدوين؟", confirmLogout: "تسجيل الخروج من Sales OS؟",
+        confirmDeleteJournal: "حذف هذا التدوين؟", confirmLogout: "تسجيل الخروج من الحساب والعودة لوضع التجربة؟",
         taskTitleRequired: "من فضلك اكتب عنوان المهمة.", dealNameRequired: "من فضلك اكتب اسم الصفقة أو العميل.",
 
         welcomeBack: "أهلاً بعودتك", createAccount: "إنشاء حساب جديد",
@@ -278,7 +343,6 @@
         noAccountYet: "لسه معندكش حساب؟", haveAccountAlready: "عندك حساب بالفعل؟",
         loggingIn: "جاري تسجيل الدخول...", signingUp: "جاري إنشاء الحساب...",
         logout: "تسجيل الخروج", loadingYourData: "جاري تحميل بياناتك...",
-        localModeNotice: "وضع الحسابات المدمجة — شغّال فورًا بدون إعداد. البيانات محفوظة في المتصفح ده بس. لو عايز مزامنة بين الأجهزة، اربط Supabase (شوف تعليقات الكود).",
         authGenericError: "حصل خطأ، حاول تاني.",
         checkEmailConfirm: "تم إنشاء الحساب. لو تأكيد الإيميل مفعّل، افتح بريدك قبل تسجيل الدخول.",
 
@@ -300,61 +364,121 @@
         emailTaken: "الإيميل ده مسجّل بالفعل — جرّب تسجيل الدخول بدل الإنشاء.",
         accountNotFound: "مفيش حساب بالإيميل ده.",
         wrongPassword: "كلمة المرور غلط.",
-        localModeAuthNotice: "حسابات مدمجة بسيطة، محفوظة في المتصفح ده بس (مش متزامنة بين الأجهزة). من فضلك متستخدمش باسورد حساس هنا."
+        localModeAuthNotice: "حسابات مدمجة بسيطة، محفوظة في المتصفح ده بس."
       }
     };
 
     const INITIAL_HABITS = [
-      { id: 'h1', title: 'Morning Sales Planning (15m)', streak: 12, completedToday: true },
-      { id: 'h2', title: 'Outbound Prospecting (10 Contacts)', streak: 5, completedToday: false },
-      { id: 'h3', title: 'Post-Call Debrief & AI Review', streak: 8, completedToday: true },
-      { id: 'h4', title: 'Read 20 min of Sales Methodology', streak: 15, completedToday: false }
+      { id: 'h1', title: 'تخطيط المبيعات الصباحي (15 دقيقة)', streak: 12, completedToday: true },
+      { id: 'h2', title: 'التنقيب والاتصال بـ 10 عملاء محتملين', streak: 5, completedToday: false },
+      { id: 'h3', title: 'مراجعة الاعتراضات المسجلة مع الموجه البيعي', streak: 8, completedToday: true },
+      { id: 'h4', title: 'قراءة 20 دقيقة في منهجيات البيع الحديثة', streak: 15, completedToday: false }
     ];
 
     const INITIAL_JOURNAL = [
       {
-        id: 'j1', date: '2026-07-26',
-        whatWentWell: "Handled price pushback well during TechCorp ME demo using ROI math.",
-        whatWentWrong: "Rushed through discovery phase without finding true pain driver.",
-        whatILearned: "When buyers ask for price immediately, reframe to discovery before giving numbers.",
-        whatToImprove: "Slow down questions during discovery calls tomorrow.",
+        id: 'j1', date: '2026-11-14',
+        whatWentWell: "معالجة اعتراض السعر في عرض TechCorp باستخدام حساب كلفة عدم الشراء (COI).",
+        whatWentWrong: "التسرع في عرض الحل قبل الحفر في الألم الحقيقي للعميل (PAIN).",
+        whatILearned: "عندما يسأل العميل عن السعر مبكراً، قم بإعادة توجيه السؤال للتشخيص قبل إعطاء الأرقام.",
+        whatToImprove: "إبطاء ريتم الحديث والاستماع 70% من وقت المكالمة غداً.",
         energy: 4, confidence: 5
       }
     ];
 
     const INITIAL_TASKS = [
-      { id: 't1', title: 'Prepare SPIN discovery questions for Apex Holding', duration: 25, completed: false, category: 'Prep', priority: 'High' },
-      { id: 't2', title: 'Read Chapter 4 of SPIN Selling book', duration: 20, completed: true, category: 'Learning', priority: 'Low' },
-      { id: 't3', title: "Review today's TechCorp objection recording with AI", duration: 15, completed: false, category: 'Followup', priority: 'High' },
-      { id: 't4', title: 'Clean up outdated contact phone numbers in CRM', duration: 10, completed: false, category: 'Admin', priority: 'Medium' }
+      { id: 't1', title: 'تحضير أسئلة التشخيص (SPIN) لاجتماع شركة Apex Holding', duration: 25, completed: false, category: 'Prep', priority: 'High' },
+      { id: 't2', title: 'قراءة وتلخيص فصل نموذج الدكتور في البيع الاستشاري', duration: 20, completed: true, category: 'Learning', priority: 'Low' },
+      { id: 't3', title: 'متابعة العميل سامح وإرسال وتد الباب لتأمين موعد الأربعاء', duration: 15, completed: false, category: 'Followup', priority: 'High' },
+      { id: 't4', title: 'تحديث بيانات العملاء المحتملين في قمع المبيعات', duration: 10, completed: false, category: 'Admin', priority: 'Medium' }
     ];
 
     const INITIAL_DEALS = [
       {
-        id: 'd1', name: 'TechCorp ME', value: 45000, stage: 'Negotiation',
+        id: 'd1', name: 'TechCorp الشرق الأوسط', value: 45000, stage: 'Negotiation',
         notes: [
-          { id: 'n1', type: 'call', date: '2026-07-24', content: 'Discovery call — identified pain point around SLA guarantees.' },
-          { id: 'n2', type: 'objection', date: '2026-07-25', content: "Price is 30% higher than CloudFlex — reframed to ROI: SLA outage costs $50k+." }
+          { id: 'n1', type: 'call', date: '2026-11-10', content: 'مكالمة تشخيص — تحديد نقطة الألم حول خسائر هدر الوقت في النظام القديم.' },
+          { id: 'n2', type: 'objection', date: '2026-11-12', content: 'اعتراض: السعر أعلى من المنافس بـ 25% — تم إبراز ضمان استرداد الاستثمار وفجوة القيمة.' }
         ]
       },
       {
-        id: 'd2', name: 'Apex Holding', value: 22000, stage: 'Discovery',
+        id: 'd2', name: 'مجموعة Apex القابضة', value: 22000, stage: 'Discovery',
         notes: [
-          { id: 'n3', type: 'call', date: '2026-07-23', content: 'Intro call scheduled, prepping SPIN questions.' }
+          { id: 'n3', type: 'call', date: '2026-11-11', content: 'تم حجز المقابلة الاستكشافية وتحضير محاور فحص الاحتياج BANT.' }
         ]
       }
     ];
 
-    // NOTE: apiKey is intentionally empty — plug in a real Gemini API key at runtime for live AI Coach responses.
-    async function callGeminiAPI(prompt) {
-      const apiKey = "";
-      if (!apiKey) {
-        return null;
+    const EMPTY_JOURNAL_FORM = { whatWentWell: '', whatWentWrong: '', whatILearned: '', whatToImprove: '', energy: 4, confidence: 5 };
+    const EMPTY_DEAL_FORM = { name: '', value: '', stage: 'Lead' };
+    const EMPTY_TASK_FORM = { title: '', duration: 15, category: 'Call', priority: 'Medium' };
+    const DEFAULT_CALC_FORM = { targetRevenue: '250000', avgDealValue: '15000', closeRate: '30', meetingRate: '40', workingDays: '22' };
+
+    // ============ LOCAL ACCOUNTS HELPER ============
+    function readAccounts() {
+      try { return JSON.parse(localStorage.getItem(LS_ACCOUNTS_KEY) || '{}'); } catch (e) { return {}; }
+    }
+    function writeAccounts(accounts) {
+      localStorage.setItem(LS_ACCOUNTS_KEY, JSON.stringify(accounts));
+    }
+
+    // ============ SMART LOCAL AI COACH ENGINE ============
+    // Generates bespoke, tactical executive advice even when offline or without an API key!
+    function generateSmartLocalCoaching(deals, tasks, habits, lang) {
+      const isAr = lang === 'ar';
+      const openHigh = tasks.filter(tk => !tk.completed && tk.priority === 'High');
+      const activeDeals = deals.filter(d => d.stage !== 'Won' && d.stage !== 'Lost');
+      const negDeals = deals.filter(d => d.stage === 'Negotiation' || d.stage === 'Proposal');
+      const weakHabits = habits.filter(h => !h.completedToday);
+
+      const tips = [];
+
+      if (negDeals.length > 0) {
+        const topD = negDeals[0];
+        tips.push(isAr
+          ? `🎯 صفقة في مرحلة حاسمة: لديك صفقة "${topD.name}" بقيمة $${topD.value.toLocaleString()} في مرحلة (${topD.stage}). لا تقدم تنازلات في السعر؛ استخدم ميزان بنجامين فرانكلين وحاسبة فجوة القيمة (COI)، واعرض بديلين محددين (X أو Y) لإغلاق التعاقد.`
+          : `🎯 Critical Closing Opportunity: You have "${topD.name}" ($${topD.value.toLocaleString()}) in ${topD.stage}. Avoid discounting; reframe with the Value Gap & ROI math, and offer two specific alternatives to lock the close.`);
+      } else if (activeDeals.length > 0) {
+        tips.push(isAr
+          ? `🚀 تحريك القمع: لديك ${activeDeals.length} صفقات نشطة في مرحلة الاستكشاف. طبق نموذج الدكتور (Pain + Press + Solve) ولا تعرض الحل قبل تسعير كلفة الألم مع العميل.`
+          : `🚀 Pipeline Velocity: You have ${activeDeals.length} active deals in discovery. Use the Doctor Method (Pain + Press + Solve) to quantify the cost of inaction before presenting your solution.`);
+      } else {
+        tips.push(isAr
+          ? `⚡ تنشيط قمع المبيعات: القمع يحتاج لضخ عملاء جدد اليوم. ركز على إجراء 10 مكالمات استكشافية بتكنيك التريلر في أول 30 ثانية لتأمين 3 مواعيد.`
+          : `⚡ Pipeline Injection: Your pipeline needs fresh leads. Focus on 10 outbound trailer calls in the first 30s to secure 3 qualified meetings.`);
       }
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      if (openHigh.length > 0) {
+        tips.push(isAr
+          ? `⏰ أولوية اليوم القصوى: مهمة "${openHigh[0].title}" مصنفة كأولوية عالية. ادخل وضع التركيز (Focus Mode) فوراً وأنجزها في أول 25 دقيقة قبل الانشغال بالأعمال الإدارية.`
+          : `⏰ High-Priority Execution: "${openHigh[0].title}" is your #1 focus. Enter Focus Mode now to clear it in a 25-min distraction-free sprint.`);
+      } else {
+        tips.push(isAr
+          ? `✅ إدارة الطاقة: مصفوفة أولوياتك خالية من الضغوط العاجلة. استغل هذا الوقت في بناء علاقات دافئة مع العملاء السابقين أو طلب إحالات (Referrals).`
+          : `✅ Energy Leverage: No urgent high-priority fires. Use this clarity to nurture past client relationships and ask for warm referrals.`);
+      }
+
+      if (weakHabits.length > 0) {
+        tips.push(isAr
+          ? `🔥 ثبات العادات (1% Daily Bridge): عادة "${weakHabits[0].title}" لم تكتمل اليوم بعد. النجاح في المبيعات هو تراكم عادات هندسية ثابتة، احرص على إتمامها للحفاظ على السلسلة.`
+          : `🔥 Habit Consistency (1% Bridge): "${weakHabits[0].title}" is pending today. Sales mastery is built on non-negotiable daily routines; check it off to protect your streak.`);
+      } else {
+        tips.push(isAr
+          ? `🌟 انضباط استثنائي: أتممت عاداتك البيعية اليوم بنسبة 100%! حافظ على هذا الزخم الذهني واختم يومك بتدوين تأمل في يومية المبيعات.`
+          : `🌟 Flawless Discipline: 100% of your daily sales habits are completed! Carry this momentum into your evening debrief in the Sales Journal.`);
+      }
+
+      return tips.join('\n\n');
+    }
+
+    // Call Gemini API if user configured key, otherwise fallback cleanly
+    async function callGeminiAPI(prompt, apiKey) {
+      if (!apiKey) return null;
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
       try {
         const res = await fetch(apiUrl, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         const data = await res.json();
@@ -364,29 +488,55 @@
       }
     }
 
-    const EMPTY_JOURNAL_FORM = { whatWentWell: '', whatWentWrong: '', whatILearned: '', whatToImprove: '', energy: 4, confidence: 5 };
-    const EMPTY_DEAL_FORM = { name: '', value: '', stage: 'Lead' };
-    const EMPTY_TASK_FORM = { title: '', duration: 15, category: 'Call', priority: 'Medium' };
-    const DEFAULT_CALC_FORM = { targetRevenue: '', avgDealValue: '', closeRate: '', meetingRate: '', workingDays: '' };
-
-    function AuthScreen({ t, isRTL, onLogin, onSignup, localMode }) {
-      const [mode, setMode] = useState('login');
+    // ==========================================
+    // AUTH MODAL (OPTIONAL - GUESTS CAN OPEN AT WILL)
+    // ==========================================
+    function AuthModal({ isOpen, onClose, t, onLoginSuccess, currentGuestData }) {
+      const [mode, setMode] = useState('login'); // 'login' or 'signup'
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
+      const [keepData, setKeepData] = useState(true);
       const [busy, setBusy] = useState(false);
       const [error, setError] = useState('');
       const [info, setInfo] = useState('');
+
+      if (!isOpen) return null;
 
       const submit = async () => {
         if (!email.trim() || !password.trim()) return;
         setBusy(true); setError(''); setInfo('');
         try {
-          if (mode === 'login') {
-            await onLogin(email.trim(), password);
+          const cleanEmail = email.trim().toLowerCase();
+          if (SUPABASE_READY) {
+            if (mode === 'login') {
+              const { data, error } = await supabaseClient.auth.signInWithPassword({ email: cleanEmail, password });
+              if (error) throw error;
+              onLoginSuccess({ id: data.session.user.id, email: data.session.user.email, isGuest: false }, keepData);
+            } else {
+              const { data, error } = await supabaseClient.auth.signUp({ email: cleanEmail, password });
+              if (error) throw error;
+              if (data.session) {
+                onLoginSuccess({ id: data.session.user.id, email: data.session.user.email, isGuest: false }, keepData);
+              } else {
+                setInfo(t.checkEmailConfirm);
+              }
+            }
           } else {
-            const result = await onSignup(email.trim(), password);
-            if (result === 'PENDING_EMAIL_CONFIRM') setInfo(t.checkEmailConfirm);
+            // LocalStorage Accounts
+            const accounts = readAccounts();
+            if (mode === 'signup') {
+              if (accounts[cleanEmail]) throw new Error('EMAIL_TAKEN');
+              accounts[cleanEmail] = { email: cleanEmail, password, createdAt: Date.now() };
+              writeAccounts(accounts);
+              onLoginSuccess({ id: cleanEmail, email: cleanEmail, isGuest: false }, keepData);
+            } else {
+              const rec = accounts[cleanEmail];
+              if (!rec) throw new Error('NOT_FOUND');
+              if (rec.password !== password) throw new Error('WRONG_PASSWORD');
+              onLoginSuccess({ id: cleanEmail, email: rec.email, isGuest: false }, keepData);
+            }
           }
+          onClose();
         } catch (err) {
           const code = err && err.message;
           const map = { EMAIL_TAKEN: t.emailTaken, NOT_FOUND: t.accountNotFound, WRONG_PASSWORD: t.wrongPassword };
@@ -397,125 +547,125 @@
       };
 
       return (
-        <div className="min-h-screen bg-[#09090b] text-slate-100 flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-5 animate-fadeIn">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shrink-0">
-                <Icon name="compass" className="w-5 h-5 text-white" />
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+          <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-fadeIn" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <Icon name="user" className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-100">{mode === 'login' ? t.welcomeBack : t.createAccount}</h3>
+                  <p className="text-[10px] text-amber-400 font-medium">{t.loginOrSignup}</p>
+                </div>
               </div>
-              <div>
-                <h1 className="font-extrabold text-base leading-none text-slate-100">Sales OS</h1>
-                <span className="text-[10px] text-amber-400 font-medium tracking-wide">{mode === 'login' ? t.welcomeBack : t.createAccount}</span>
-              </div>
+              <button onClick={onClose} aria-label={t.close} className="p-1 text-slate-400 hover:text-white">
+                <Icon name="x" className="w-4 h-4" />
+              </button>
             </div>
 
-            {localMode && (
-              <p className="text-[10px] text-slate-500 bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-2 leading-relaxed">{t.localModeAuthNotice}</p>
-            )}
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              {t.localModeAuthNotice}
+            </p>
 
             <div className="space-y-3">
               <div>
                 <label className="text-[11px] font-semibold text-slate-400">{t.email}</label>
                 <input type="email" autoFocus value={email} onChange={e => setEmail(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && submit()}
-                  aria-label={t.email}
+                  placeholder="sales@example.com"
                   className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500" />
               </div>
               <div>
                 <label className="text-[11px] font-semibold text-slate-400">{t.password}</label>
                 <input type="password" value={password} onChange={e => setPassword(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && submit()}
-                  aria-label={t.password}
+                  placeholder="••••••••"
                   className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500" />
               </div>
+
+              <label className="flex items-center gap-2 cursor-pointer pt-1">
+                <input type="checkbox" checked={keepData} onChange={e => setKeepData(e.target.checked)} className="accent-amber-500 rounded" />
+                <span className="text-[11px] text-slate-300 font-medium">{t.keepGuestData}</span>
+              </label>
             </div>
 
-            {error && <p className="text-[11px] text-rose-400">{error}</p>}
-            {info && <p className="text-[11px] text-emerald-400">{info}</p>}
+            {error && <p className="text-[11px] text-rose-400 bg-rose-500/10 p-2 rounded-lg border border-rose-500/20">{error}</p>}
+            {info && <p className="text-[11px] text-emerald-400 bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20">{info}</p>}
 
             <button onClick={submit} disabled={busy}
-              className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all disabled:opacity-50">
+              className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all disabled:opacity-50 shadow-md">
               {busy ? (mode === 'login' ? t.loggingIn : t.signingUp) : (mode === 'login' ? t.login : t.signup)}
             </button>
 
-            <p className="text-center text-[11px] text-slate-400">
-              {mode === 'login' ? t.noAccountYet : t.haveAccountAlready}{' '}
+            <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-zinc-800/80">
               <button onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setInfo(''); }} className="text-amber-400 font-semibold hover:underline">
-                {mode === 'login' ? t.signup : t.login}
+                {mode === 'login' ? t.noAccountYet : t.haveAccountAlready}
               </button>
-            </p>
+              <button onClick={onClose} className="text-slate-500 hover:text-slate-300">
+                {t.continueAsGuest}
+              </button>
+            </div>
           </div>
         </div>
       );
     }
 
-    // ============ ZERO-SETUP LOCAL ACCOUNTS (used automatically when Supabase isn't configured) ============
-    // Stores accounts + each user's data in this browser's localStorage. No external service, no server needed —
-    // works right away on GitHub Pages or any static host. Trade-off: accounts/data live in THIS browser only,
-    // so they won't follow the user to a different device or browser. For that, connect Supabase (see comments above).
-    // Note: this is a lightweight solution for internal/team use, not bank-grade security —
-    // passwords are stored as-is, so ask people not to reuse a sensitive password here.
-    const LS_ACCOUNTS_KEY = 'sales_os_accounts';
-    const LS_SESSION_KEY = 'sales_os_session';
-    const LS_DATA_PREFIX = 'sales_os_data:';
-
-    function readAccounts() {
-      try { return JSON.parse(localStorage.getItem(LS_ACCOUNTS_KEY) || '{}'); } catch (e) { return {}; }
-    }
-    function writeAccounts(accounts) {
-      localStorage.setItem(LS_ACCOUNTS_KEY, JSON.stringify(accounts));
-    }
-
-    async function localSignup(email, password) {
-      const id = email.toLowerCase();
-      const accounts = readAccounts();
-      if (accounts[id]) throw new Error('EMAIL_TAKEN');
-      accounts[id] = { email, password, createdAt: Date.now() };
-      writeAccounts(accounts);
-      localStorage.setItem(LS_DATA_PREFIX + id, JSON.stringify({
-        habits: INITIAL_HABITS, journalEntries: INITIAL_JOURNAL, tasks: INITIAL_TASKS, deals: INITIAL_DEALS, calcForm: DEFAULT_CALC_FORM, totalFocusMinutes: 0
-      }));
-      localStorage.setItem(LS_SESSION_KEY, id);
-      return { id, email };
-    }
-
-    async function localLogin(email, password) {
-      const id = email.toLowerCase();
-      const accounts = readAccounts();
-      const record = accounts[id];
-      if (!record) throw new Error('NOT_FOUND');
-      if (record.password !== password) throw new Error('WRONG_PASSWORD');
-      localStorage.setItem(LS_SESSION_KEY, id);
-      return { id, email: record.email };
-    }
-
-    async function localLogout() {
-      localStorage.removeItem(LS_SESSION_KEY);
-    }
-
-    function App({ session, onLogout }) {
-      const [lang, setLang] = useState('en');
+    // ==========================================
+    // MAIN APP COMPONENT
+    // ==========================================
+    function SalesOSApp() {
+      // Language state initialized from localStorage with fallback to Arabic
+      const [lang, setLang] = useState(() => localStorage.getItem(LS_LANG_KEY) || 'ar');
       const [theme, setTheme] = useState('dark');
       const [currentTab, setCurrentTab] = useState('dashboard');
 
+      const t = TRANSLATIONS[lang] || TRANSLATIONS.ar;
+      const isRTL = lang === 'ar';
+
+      // Authentication Session (Guest Mode by Default!)
+      const [session, setSession] = useState(() => {
+        try {
+          const savedSessionId = localStorage.getItem(LS_SESSION_KEY);
+          if (savedSessionId) {
+            const accounts = readAccounts();
+            if (accounts[savedSessionId]) {
+              return { id: savedSessionId, email: accounts[savedSessionId].email, isGuest: false };
+            }
+          }
+        } catch (e) {}
+        // Default: Guest Demo Session (Zero login barrier!)
+        return { id: GUEST_ID, email: 'Guest (وضع التجربة)', isGuest: true };
+      });
+
+      const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+      // App Core Data
       const [habits, setHabits] = useState(INITIAL_HABITS);
       const [journalEntries, setJournalEntries] = useState(INITIAL_JOURNAL);
       const [tasks, setTasks] = useState(INITIAL_TASKS);
       const [deals, setDeals] = useState(INITIAL_DEALS);
-      const [totalFocusMinutes, setTotalFocusMinutes] = useState(0);
+      const [totalFocusMinutes, setTotalFocusMinutes] = useState(45);
+      const [calcForm, setCalcForm] = useState(DEFAULT_CALC_FORM);
 
+      // Focus Timer State (Timestamp-backed to prevent drift in background tabs!)
       const FOCUS_DURATION = 25 * 60;
       const [focusTimer, setFocusTimer] = useState(FOCUS_DURATION);
       const [isTimerRunning, setIsTimerRunning] = useState(false);
       const [focusTaskId, setFocusTaskId] = useState(null);
       const [sessionJustCompleted, setSessionJustCompleted] = useState(false);
+      const timerEndRef = useRef(null);
 
-      const [searchQuery, setSearchQuery] = useState('');
-      const [isSearchOpen, setIsSearchOpen] = useState(false);
+      // AI Coach State
       const [isAICoachOpen, setIsAICoachOpen] = useState(false);
       const [aiCoachResponse, setAiCoachResponse] = useState('');
       const [isAiLoading, setIsAiLoading] = useState(false);
+      const [geminiApiKey, setGeminiApiKey] = useState(() => localStorage.getItem(LS_GEMINI_KEY) || '');
+      const [isEditingKey, setIsEditingKey] = useState(false);
 
+      // Modals & UI States
+      const [searchQuery, setSearchQuery] = useState('');
+      const [isSearchOpen, setIsSearchOpen] = useState(false);
       const [isFABOpen, setIsFABOpen] = useState(false);
       const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
       const [isDealModalOpen, setIsDealModalOpen] = useState(false);
@@ -526,60 +676,79 @@
       const [newJournal, setNewJournal] = useState(EMPTY_JOURNAL_FORM);
       const [newDeal, setNewDeal] = useState(EMPTY_DEAL_FORM);
       const [newTask, setNewTask] = useState(EMPTY_TASK_FORM);
-      const [calcForm, setCalcForm] = useState(DEFAULT_CALC_FORM);
       const [taskFormError, setTaskFormError] = useState('');
       const [dealFormError, setDealFormError] = useState('');
 
       const [expandedDealId, setExpandedDealId] = useState(null);
       const [toast, setToast] = useState(null);
       const toastTimerRef = useRef(null);
+      const [noteDrafts, setNoteDrafts] = useState({});
+
+      const dataLoadedRef = useRef(false);
+      const saveTimerRef = useRef(null);
+
       const showToast = (message) => {
         setToast(message);
         if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
         toastTimerRef.current = setTimeout(() => setToast(null), 2800);
       };
-      const [noteDrafts, setNoteDrafts] = useState({});
 
-      const [isLoadingData, setIsLoadingData] = useState(!!session);
-      const dataLoadedRef = useRef(false);
-      const saveTimerRef = useRef(null);
+      // Keep html dir and lang attribute in sync
+      useEffect(() => {
+        document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+        document.documentElement.lang = lang;
+        document.title = lang === 'ar' ? 'Sales OS - نظام التشغيل الشخصي للمبيعات' : 'Sales OS - Personal Sales Operating System';
+        localStorage.setItem(LS_LANG_KEY, lang);
+      }, [lang, isRTL]);
 
-      const t = TRANSLATIONS[lang];
-      const isRTL = lang === 'ar';
-
-      useEffect(() => { document.documentElement.dir = isRTL ? 'rtl' : 'ltr'; }, [lang]);
-
+      // Focus Mode Countdown with drift-prevention
       useEffect(() => {
         let interval = null;
-        if (isTimerRunning && focusTimer > 0) {
-          interval = setInterval(() => setFocusTimer(prev => prev - 1), 1000);
-        } else if (focusTimer === 0 && isTimerRunning) {
-          setIsTimerRunning(false);
-          setTotalFocusMinutes(m => m + Math.round(FOCUS_DURATION / 60));
-          setSessionJustCompleted(true);
+        if (isTimerRunning) {
+          if (!timerEndRef.current) {
+            timerEndRef.current = Date.now() + focusTimer * 1000;
+          }
+          interval = setInterval(() => {
+            const remaining = Math.max(0, Math.round((timerEndRef.current - Date.now()) / 1000));
+            setFocusTimer(remaining);
+            if (remaining <= 0) {
+              clearInterval(interval);
+              setIsTimerRunning(false);
+              timerEndRef.current = null;
+              setTotalFocusMinutes(m => m + Math.round(FOCUS_DURATION / 60));
+              setSessionJustCompleted(true);
+              playChimeSound();
+            }
+          }, 300);
+        } else {
+          timerEndRef.current = null;
         }
         return () => clearInterval(interval);
-      }, [isTimerRunning, focusTimer]);
+      }, [isTimerRunning]);
 
+      // Keyboard shortcuts ('/' for search, 'Esc' for closing modals)
       useEffect(() => {
         const handleKeyDown = (e) => {
           if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
             e.preventDefault(); setIsSearchOpen(true);
           }
-          if (e.key === 'Escape') { setIsSearchOpen(false); setIsFABOpen(false); }
+          if (e.key === 'Escape') {
+            setIsSearchOpen(false);
+            setIsFABOpen(false);
+            setIsAuthModalOpen(false);
+            setIsAICoachOpen(false);
+          }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
       }, []);
 
-      // Load this user's saved data once, right after login
+      // Load user or guest data from storage
       useEffect(() => {
-        if (!session) return;
         let cancelled = false;
         (async () => {
-          setIsLoadingData(true);
           let saved = null;
-          if (SUPABASE_READY) {
+          if (SUPABASE_READY && !session.isGuest) {
             const { data, error } = await supabaseClient
               .from('user_data')
               .select('data')
@@ -594,66 +763,83 @@
           }
           if (cancelled) return;
           if (saved) {
-            if (saved.habits) setHabits(saved.habits);
-            if (saved.journalEntries) setJournalEntries(saved.journalEntries);
-            if (saved.tasks) setTasks(saved.tasks);
-            if (saved.deals) setDeals(saved.deals);
-            if (saved.calcForm) setCalcForm(saved.calcForm);
+            if (Array.isArray(saved.habits)) setHabits(saved.habits);
+            if (Array.isArray(saved.journalEntries)) setJournalEntries(saved.journalEntries);
+            if (Array.isArray(saved.tasks)) setTasks(saved.tasks);
+            if (Array.isArray(saved.deals)) setDeals(saved.deals);
+            if (saved.calcForm && typeof saved.calcForm === 'object') setCalcForm(saved.calcForm);
             if (typeof saved.totalFocusMinutes === 'number') setTotalFocusMinutes(saved.totalFocusMinutes);
-          } else {
-            const fresh = { habits: INITIAL_HABITS, journalEntries: INITIAL_JOURNAL, tasks: INITIAL_TASKS, deals: INITIAL_DEALS, calcForm: DEFAULT_CALC_FORM, totalFocusMinutes: 0 };
-            if (SUPABASE_READY) await supabaseClient.from('user_data').upsert({ user_id: session.id, data: fresh });
-            else localStorage.setItem(LS_DATA_PREFIX + session.id, JSON.stringify(fresh));
           }
           dataLoadedRef.current = true;
-          setIsLoadingData(false);
         })();
         return () => { cancelled = true; };
-      }, [session]);
+      }, [session.id]);
 
-      // Auto-save this user's data whenever it changes (debounced)
+      // Auto-save data on every change
       useEffect(() => {
-        if (!session || !dataLoadedRef.current) return;
+        if (!dataLoadedRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
           const payload = { habits, journalEntries, tasks, deals, calcForm, totalFocusMinutes };
-          if (SUPABASE_READY) {
+          if (SUPABASE_READY && !session.isGuest) {
             supabaseClient.from('user_data').upsert({ user_id: session.id, data: payload, updated_at: new Date().toISOString() });
           } else {
             localStorage.setItem(LS_DATA_PREFIX + session.id, JSON.stringify(payload));
           }
-        }, 800);
+        }, 600);
         return () => clearTimeout(saveTimerRef.current);
-      }, [habits, journalEntries, tasks, deals, calcForm, totalFocusMinutes, session]);
+      }, [habits, journalEntries, tasks, deals, calcForm, totalFocusMinutes, session.id]);
+
+      const handleLoginSuccess = (newSession, keepData) => {
+        if (keepData) {
+          // Carry current guest data over to new account!
+          const payload = { habits, journalEntries, tasks, deals, calcForm, totalFocusMinutes };
+          localStorage.setItem(LS_DATA_PREFIX + newSession.id, JSON.stringify(payload));
+        }
+        localStorage.setItem(LS_SESSION_KEY, newSession.id);
+        setSession(newSession);
+        showToast(lang === 'ar' ? 'تم تسجيل الدخول بنجاح ومزامنة البيانات.' : 'Logged in successfully.');
+      };
+
+      const handleLogout = () => {
+        if (!window.confirm(t.confirmLogout)) return;
+        localStorage.removeItem(LS_SESSION_KEY);
+        // Fall back to Guest mode smoothly
+        setSession({ id: GUEST_ID, email: 'Guest (وضع التجربة)', isGuest: true });
+        showToast(lang === 'ar' ? 'تم تسجيل الخروج والعودة لوضع التجربة.' : 'Returned to Guest Mode.');
+      };
 
       const openTasks = useMemo(() => tasks.filter(tk => !tk.completed), [tasks]);
 
-      // Real, personalized context for the AI coach — no generic filler.
-      const buildCoachingContext = () => {
+      // Run AI Coach Analysis (Smart local engine + optional Gemini Live)
+      const runAICoachAnalysis = async () => {
+        setIsAiLoading(true);
+        setIsAICoachOpen(true);
+
         const openHigh = tasks.filter(tk => !tk.completed && tk.priority === 'High');
         const activeDeals = deals.filter(d => d.stage !== 'Won' && d.stage !== 'Lost');
         const objections = deals.flatMap(d => d.notes.filter(n => n.type === 'objection').map(n => `${d.name}: ${n.content}`));
         const weakHabits = habits.filter(h => !h.completedToday);
-        return [
-          `Open high-priority tasks: ${openHigh.map(tk2 => tk2.title).join('; ') || 'none'}`,
+
+        const context = [
+          `Open high-priority tasks: ${openHigh.map(tk => tk.title).join('; ') || 'none'}`,
           `Active deals: ${activeDeals.map(d => `${d.name} ($${d.value}, stage: ${d.stage})`).join('; ') || 'none'}`,
           `Recent objections logged: ${objections.slice(-3).join(' | ') || 'none'}`,
-          `Habits not done today: ${weakHabits.map(h => h.title).join('; ') || 'none'}`
+          `Habits pending today: ${weakHabits.map(h => h.title).join('; ') || 'none'}`
         ].join('\n');
-      };
 
-      const runAICoachAnalysis = async () => {
-        setIsAiLoading(true); setIsAICoachOpen(true);
-        const context = buildCoachingContext();
-        const hasRealData = deals.length > 0 || tasks.length > 0 || habits.length > 0;
-        const prompt = `You are a sales performance coach. Based on this salesperson's real, current data, give 3 short, specific, actionable tips for today:\n${context}`;
-        const result = await callGeminiAPI(prompt);
+        let result = null;
+        if (geminiApiKey) {
+          const prompt = `You are Omar Saied's senior sales performance coach. Analyze this real salesperson context and give exactly 3 concise, punchy, high-impact tactical bullet points in ${lang === 'ar' ? 'Arabic' : 'English'}:\n${context}`;
+          result = await callGeminiAPI(prompt, geminiApiKey);
+        }
+
         if (result) {
           setAiCoachResponse(result);
-        } else if (hasRealData) {
-          setAiCoachResponse(context + '\n\n' + t.aiNoDataNotice);
         } else {
-          setAiCoachResponse(t.aiNoDataNotice);
+          // Robust local expert system
+          const localCoaching = generateSmartLocalCoaching(deals, tasks, habits, lang);
+          setAiCoachResponse(localCoaching);
         }
         setIsAiLoading(false);
       };
@@ -663,6 +849,7 @@
         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
       };
 
+      // Actions
       const addJournalEntry = () => {
         if (!newJournal.whatWentWell.trim() && !newJournal.whatILearned.trim()) return;
         setJournalEntries([{ id: 'j' + Date.now(), date: new Date().toISOString().split('T')[0], ...newJournal }, ...journalEntries]);
@@ -677,13 +864,13 @@
       const addHabit = () => {
         if (!newHabitTitle.trim()) return;
         setHabits([...habits, { id: 'h' + Date.now(), title: newHabitTitle.trim(), streak: 0, completedToday: false }]);
-        setNewHabitTitle(''); setIsAddingHabit(false);
+        setNewHabitTitle('');
+        setIsAddingHabit(false);
       };
       const deleteHabit = (id) => {
         if (!window.confirm(t.confirmDeleteHabit)) return;
         setHabits(habits.filter(h => h.id !== id));
       };
-
       const toggleHabit = (id) => {
         setHabits(habits.map(h => h.id === id
           ? { ...h, completedToday: !h.completedToday, streak: h.completedToday ? Math.max(0, h.streak - 1) : h.streak + 1 }
@@ -692,15 +879,17 @@
 
       const addDeal = () => {
         if (!newDeal.name.trim()) { setDealFormError(t.dealNameRequired); return; }
-        setDeals([{ id: 'd' + Date.now(), name: newDeal.name.trim(), value: Number(newDeal.value) || 0, stage: newDeal.stage, notes: [] }, ...deals]);
-        setNewDeal(EMPTY_DEAL_FORM); setDealFormError(''); setIsDealModalOpen(false);
+        const val = Math.max(0, Number(newDeal.value) || 0);
+        setDeals([{ id: 'd' + Date.now(), name: newDeal.name.trim(), value: val, stage: newDeal.stage, notes: [] }, ...deals]);
+        setNewDeal(EMPTY_DEAL_FORM);
+        setDealFormError('');
+        setIsDealModalOpen(false);
       };
       const deleteDeal = (id) => {
         if (!window.confirm(t.confirmDeleteDeal)) return;
         setDeals(deals.filter(d => d.id !== id));
         if (expandedDealId === id) setExpandedDealId(null);
       };
-
       const updateDealStage = (id, stage) => {
         setDeals(deals.map(d => d.id === id ? { ...d, stage } : d));
         if (stage === 'Won') showToast(t.dealWonToast);
@@ -724,7 +913,7 @@
         setTasks([...tasks, {
           id: 't' + Date.now(),
           title: newTask.title.trim(),
-          duration: Number(newTask.duration) || 15,
+          duration: Math.max(5, Number(newTask.duration) || 15),
           completed: false,
           category: newTask.category,
           priority: newTask.priority
@@ -740,6 +929,7 @@
       };
       const toggleTask = (id) => setTasks(tasks.map(tk => tk.id === id ? { ...tk, completed: !tk.completed } : tk));
 
+      // Search Items List
       const searchableItems = useMemo(() => {
         const items = [];
         habits.forEach(h => items.push({ id: 'habit-' + h.id, title: h.title, type: t.habits, tab: 'habits' }));
@@ -773,14 +963,12 @@
         deals.filter(d => d.stage === 'Won').reduce((sum, d) => sum + (d.value || 0), 0),
       [deals]);
 
-      // Real "top priority" — highest-priority open task, not a hardcoded string.
       const topPriorityTask = useMemo(() => {
         const rank = { High: 0, Medium: 1, Low: 2 };
         const open = tasks.filter(tk => !tk.completed).sort((a, b) => rank[a.priority] - rank[b.priority]);
         return open[0] || null;
       }, [tasks]);
 
-      // Real "hottest opportunity" — highest-value deal that's not Won/Lost, weighted toward late stages.
       const hottestDeal = useMemo(() => {
         const stageWeight = { Negotiation: 3, Proposal: 2, Discovery: 1, Lead: 0 };
         const active = deals.filter(d => d.stage !== 'Won' && d.stage !== 'Lost');
@@ -788,38 +976,38 @@
         return [...active].sort((a, b) => (stageWeight[b.stage] - stageWeight[a.stage]) || (b.value - a.value))[0];
       }, [deals]);
 
-      // Real habit consistency — % of habits completed today, and the longest current streak.
       const habitStats = useMemo(() => {
         if (habits.length === 0) return { pct: 0, bestStreak: 0, weakest: null };
         const doneToday = habits.filter(h => h.completedToday).length;
         const pct = Math.round((doneToday / habits.length) * 100);
-        const bestStreak = Math.max(...habits.map(h => h.streak));
+        const bestStreak = Math.max(0, ...habits.map(h => h.streak));
         const weakest = [...habits].sort((a, b) => a.streak - b.streak)[0];
         return { pct, bestStreak, weakest };
       }, [habits]);
 
+      // Mathematical Funnel Calculations
       const buildFunnel = (targetAmount, avgDeal, closeRate, meetingRate, workingDays) => {
         if (!targetAmount || !avgDeal || targetAmount <= 0 || avgDeal <= 0) return null;
         const deals = targetAmount / avgDeal;
-        const visits = closeRate > 0 ? deals / (closeRate / 100) : null;
-        const calls = (visits !== null && meetingRate > 0) ? visits / (meetingRate / 100) : null;
+        const visits = (closeRate && closeRate > 0) ? deals / (closeRate / 100) : null;
+        const calls = (visits !== null && meetingRate && meetingRate > 0) ? visits / (meetingRate / 100) : null;
         const dealsR = Math.ceil(deals);
         const visitsR = visits !== null ? Math.ceil(visits) : null;
         const callsR = calls !== null ? Math.ceil(calls) : null;
-        const perDay = workingDays > 0 ? {
+        const perDay = (workingDays && workingDays > 0) ? {
           deals: Math.ceil(dealsR / workingDays * 10) / 10,
-          visits: visitsR !== null ? Math.ceil(visitsR / workingDays * 10) / 10 : null,
-          calls: callsR !== null ? Math.ceil(callsR / workingDays * 10) / 10 : null
+          visits: visitsR !== null ? Math.ceil(visitsR / workingDays) : null,
+          calls: callsR !== null ? Math.ceil(callsR / workingDays) : null
         } : null;
         return { dealsR, visitsR, callsR, perDay };
       };
 
       const calcResults = useMemo(() => {
-        const target = parseFloat(calcForm.targetRevenue);
-        const avgDeal = parseFloat(calcForm.avgDealValue);
-        const closeRate = parseFloat(calcForm.closeRate);
-        const meetingRate = parseFloat(calcForm.meetingRate);
-        const workingDays = parseFloat(calcForm.workingDays);
+        const target = Math.max(0, parseFloat(calcForm.targetRevenue) || 0);
+        const avgDeal = Math.max(0, parseFloat(calcForm.avgDealValue) || 0);
+        const closeRate = Math.min(100, Math.max(0, parseFloat(calcForm.closeRate) || 0));
+        const meetingRate = Math.min(100, Math.max(0, parseFloat(calcForm.meetingRate) || 0));
+        const workingDays = Math.max(1, parseFloat(calcForm.workingDays) || 22);
 
         const total = buildFunnel(target, avgDeal, closeRate, meetingRate, workingDays);
         if (!total) return null;
@@ -835,8 +1023,22 @@
         if (!calcResults || !calcResults.remaining || !calcResults.remaining.perDay) return;
         const pace = calcResults.remaining.perDay;
         const newTasks = [];
-        if (pace.calls) newTasks.push({ id: 't' + Date.now() + 'c', title: `${t.callsNeeded}: ${pace.calls}`, duration: 20, completed: false, category: 'Call', priority: 'High', fromCalculator: true });
-        if (pace.visits) newTasks.push({ id: 't' + Date.now() + 'v', title: `${t.visitsNeeded}: ${pace.visits}`, duration: 45, completed: false, category: 'Followup', priority: 'High', fromCalculator: true });
+        if (pace.calls) {
+          const roundedCalls = Math.ceil(pace.calls);
+          newTasks.push({
+            id: 't' + Date.now() + 'c',
+            title: `${t.callsNeeded}: ${roundedCalls} ${lang === 'ar' ? 'مكالمات استكشافية' : 'calls'}`,
+            duration: 20, completed: false, category: 'Call', priority: 'High', fromCalculator: true
+          });
+        }
+        if (pace.visits) {
+          const roundedVisits = Math.ceil(pace.visits);
+          newTasks.push({
+            id: 't' + Date.now() + 'v',
+            title: `${t.visitsNeeded}: ${roundedVisits} ${lang === 'ar' ? 'مقابلات / عروض' : 'meetings'}`,
+            duration: 45, completed: false, category: 'Followup', priority: 'High', fromCalculator: true
+          });
+        }
         if (newTasks.length) {
           setTasks([...tasks, ...newTasks]);
           showToast(t.tasksAddedToMatrix);
@@ -855,15 +1057,11 @@
       const deepWorkHours = Math.floor(totalFocusMinutes / 60);
       const deepWorkMins = totalFocusMinutes % 60;
 
-      const handleLogoutClick = () => {
-        if (window.confirm(t.confirmLogout)) onLogout();
-      };
-
       const TaskCard = ({ tk }) => (
         <div className={`group-item p-3 rounded-xl border bg-zinc-800/40 space-y-2 ${tk.fromCalculator ? 'border-amber-500/40 ring-1 ring-amber-500/10' : 'border-zinc-700/50'}`}>
           <div className="flex items-start gap-2.5">
             <button onClick={() => toggleTask(tk.id)} aria-label={tk.completed ? t.markUndone : t.markDone}
-              className={`w-5 h-5 mt-0.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${tk.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950 font-bold' : 'border-slate-600'}`}>
+              className={`w-5 h-5 mt-0.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${tk.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950 font-bold' : 'border-slate-600 hover:border-amber-400'}`}>
               {tk.completed && <Icon name="check" className="w-3.5 h-3.5" />}
             </button>
             <div className="flex-1 min-w-0">
@@ -872,7 +1070,7 @@
                 <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${CATEGORY_COLORS[tk.category] || CATEGORY_COLORS.Admin}`}>
                   <Icon name={CATEGORY_ICONS[tk.category] || 'tag'} className="w-2.5 h-2.5" />{t['category' + tk.category]}
                 </span>
-                <span className="text-[10px] text-slate-400">{tk.duration}m</span>
+                <span className="text-[10px] text-slate-400 font-mono">{tk.duration}m</span>
                 {tk.fromCalculator && (
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold text-amber-400 bg-amber-500/10" title={t.targetCalc}>
                     <Icon name="calculator" className="w-2.5 h-2.5" />
@@ -887,40 +1085,53 @@
         </div>
       );
 
-      if (isLoadingData) {
-        return (
-          <div className="min-h-screen bg-[#09090b] text-slate-100 flex items-center justify-center">
-            <div className="flex items-center gap-2 text-amber-400 text-xs"><Icon name="sparkles" className="w-4 h-4 animate-spin" />{t.loadingYourData}</div>
-          </div>
-        );
-      }
-
       const focusedTask = tasks.find(tk => tk.id === focusTaskId) || null;
 
       return (
         <div className={`min-h-screen font-sans ${theme === 'dark' ? 'bg-[#09090b] text-slate-100' : 'bg-slate-50 text-slate-800'} transition-colors duration-200 flex flex-col md:flex-row`}>
 
-          {}
-          <aside className={`w-full md:w-60 border-b md:border-b-0 ${isRTL ? 'md:border-l' : 'md:border-r'} ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]' : 'border-slate-200 bg-white'} flex flex-col justify-between shrink-0 p-4`}>
+          {/* SIDEBAR NAVIGATION */}
+          <aside className={`w-full md:w-64 border-b md:border-b-0 ${isRTL ? 'md:border-l' : 'md:border-r'} ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]' : 'border-slate-200 bg-white'} flex flex-col justify-between shrink-0 p-4`}>
             <div>
-              <div className="flex items-center gap-3 mb-6 px-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-lg">
+              <div className="flex items-center gap-3 mb-5 px-2">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shrink-0">
                   <Icon name="compass" className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h1 className="font-extrabold text-base leading-none text-slate-100">{t.appName}</h1>
-                  <span className="text-[10px] text-amber-400 font-medium tracking-wide">{t.appSub}</span>
+                  <span className="text-[10px] text-amber-400 font-semibold tracking-wide">{t.appSub}</span>
                 </div>
               </div>
 
-              {session && (
-                <div className="p-2.5 mb-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-between gap-2">
-                  <span className="text-[10px] text-slate-400 truncate">{session.email}</span>
-                  <button onClick={handleLogoutClick} className="text-[10px] font-bold text-rose-400 hover:underline shrink-0">{t.logout}</button>
+              {/* ACCOUNT / GUEST STATUS PILL (OPTIONAL AUTH GATEWAY) */}
+              <div className="p-2.5 mb-4 rounded-xl bg-zinc-800/40 border border-zinc-700/50 flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-1 text-[11px]">
+                  <span className="flex items-center gap-1.5 font-bold truncate">
+                    <span className={`w-2 h-2 rounded-full ${session.isGuest ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`}></span>
+                    <span className={session.isGuest ? 'text-amber-400' : 'text-slate-200'}>
+                      {session.isGuest ? t.guestMode : session.email}
+                    </span>
+                  </span>
+                  {session.isGuest ? (
+                    <button onClick={() => setIsAuthModalOpen(true)}
+                      className="px-2 py-0.5 rounded-md bg-amber-500 text-slate-950 font-bold text-[10px] hover:bg-amber-400 transition-all shadow-sm">
+                      {t.loginOrSignup}
+                    </button>
+                  ) : (
+                    <button onClick={handleLogout}
+                      className="text-[10px] font-bold text-rose-400 hover:underline">
+                      {t.logout}
+                    </button>
+                  )}
                 </div>
-              )}
+                {session.isGuest && (
+                  <p className="text-[9.5px] text-slate-500 leading-tight">
+                    {t.guestNotice}
+                  </p>
+                )}
+              </div>
 
-              <div className="p-3 mb-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-transparent border border-amber-500/20 text-[11px] font-medium text-amber-200/90">
+              <div className="p-3 mb-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-transparent border border-amber-500/20 text-[11px] font-medium text-amber-200/90 leading-snug">
                 💡 "{t.questionOfDay}"
               </div>
 
@@ -929,7 +1140,7 @@
                   const active = currentTab === item.id;
                   return (
                     <button key={item.id} onClick={() => setCurrentTab(item.id)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                         active ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-sm' : 'text-slate-400 hover:bg-zinc-800/60 hover:text-slate-200'
                       }`}>
                       <Icon name={item.icon} className={`w-4 h-4 ${active ? 'text-amber-400' : 'text-slate-400'}`} />
@@ -940,13 +1151,18 @@
               </nav>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-zinc-800/60">
+            <div className="mt-4 pt-3 border-t border-zinc-800/60 space-y-2">
               <button onClick={() => runAICoachAnalysis()}
                 className="w-full rounded-xl p-3 bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900 border border-indigo-500/30 hover:border-indigo-500/60 transition-all text-left">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400"><Icon name="brain" className="w-4 h-4" /></div>
+                  <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 shrink-0">
+                    <Icon name="brain" className="w-4 h-4" />
+                  </div>
                   <div>
-                    <p className="text-xs font-bold text-indigo-200 flex items-center gap-1">{t.aiCoach}<Icon name="sparkles" className="w-3 h-3 text-amber-400" /></p>
+                    <p className="text-xs font-bold text-indigo-200 flex items-center gap-1">
+                      {t.aiCoach}
+                      <Icon name="sparkles" className="w-3 h-3 text-amber-400" />
+                    </p>
                     <p className="text-[10px] text-indigo-300/70">{t.aiCoachSub}</p>
                   </div>
                 </div>
@@ -954,34 +1170,47 @@
             </div>
           </aside>
 
-          {}
+          {/* MAIN CONTENT AREA */}
           <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
 
+            {/* TOP HEADER BAR */}
             <header className={`h-16 px-6 border-b ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]/80' : 'border-slate-200 bg-white/80'} backdrop-blur-md sticky top-0 z-20 flex items-center justify-between gap-4`}>
               <button onClick={() => setIsSearchOpen(true)}
-                className="flex-1 max-w-md flex items-center justify-between px-3.5 py-2 rounded-xl text-xs bg-zinc-900 text-slate-400 border border-zinc-800 hover:border-slate-400 transition-all">
-                <div className="flex items-center gap-2"><Icon name="search" className="w-4 h-4 text-slate-400" /><span>{t.searchPlaceholder}</span></div>
-                <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded border border-slate-700">/</kbd>
-              </button>
+                className="flex-1 max-w-md flex items-center justify-between px-3.5 py-2 rounded-xl text-xs bg-zinc-900 text-slate-400 border border-zinc-800 hover:border-slate-500 transition-all">
+                <div className="flex items-center gap-2">
+                  <Icon name="search" className="w-4 h-4 text-slate-400" />
+                  <span>{t.searchPlaceholder}</span>
+                </div>
+                <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded border border-slate-700 font-mono">/</kbd>
+              </header>
 
               <div className="flex items-center gap-2">
                 <button onClick={() => setIsJournalModalOpen(true)}
-                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md">
-                  <Icon name="bookMarked" className="w-3.5 h-3.5" /><span className="hidden sm:inline">{t.writeJournalEntry}</span>
+                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md">
+                  <Icon name="bookMarked" className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{t.writeJournalEntry}</span>
                 </button>
-                <button onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} aria-label={t.languageToggle} className="p-2 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-zinc-800 text-slate-300">
-                  <Icon name="languages" className="w-4 h-4 text-indigo-400" /><span className="uppercase text-[11px]">{t.languageToggle}</span>
+
+                <button onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} aria-label={t.languageToggle}
+                  className="p-2 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-zinc-800 text-slate-300 border border-zinc-800">
+                  <Icon name="languages" className="w-4 h-4 text-indigo-400" />
+                  <span className="text-[11px] font-bold">{t.languageToggle}</span>
                 </button>
-                <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme" className="p-2 rounded-lg hover:bg-zinc-800 text-amber-400">
+
+                <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme"
+                  className="p-2 rounded-xl hover:bg-zinc-800 text-amber-400 border border-zinc-800">
                   <Icon name={theme === 'dark' ? 'sun' : 'moon'} className="w-4 h-4" />
                 </button>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-indigo-500 flex items-center justify-center text-slate-950 font-black text-xs ring-2 ring-amber-500/30">OS</div>
+
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-indigo-500 flex items-center justify-center text-slate-950 font-black text-xs ring-2 ring-amber-500/30">
+                  OS
+                </div>
               </div>
             </header>
 
             <div className="p-6 max-w-5xl w-full mx-auto space-y-6">
 
-              {}
+              {/* TAB 1: TODAY'S FOCUS DASHBOARD */}
               {currentTab === 'dashboard' && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="p-6 rounded-2xl bg-gradient-to-r from-zinc-900 via-indigo-950/40 to-zinc-900 border border-amber-500/20 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -990,15 +1219,21 @@
                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">DAILY MINDSET</span>
                         <span className="text-xs text-slate-400">• {t.pillarLabel}</span>
                       </div>
-                      <h2 className="text-xl font-black text-slate-100">"You don't close sales by pitching; you close sales by understanding."</h2>
-                      <p className="text-xs text-slate-400">{t.topPriorityToday} {topPriorityTask ? topPriorityTask.title : t.noPriorityTask}</p>
+                      <h2 className="text-lg md:text-xl font-black text-slate-100">
+                        {lang === 'ar' ? '"أنت لا تغلق الصفقات بالضغط، بل تغلقها بفهم ألم العميل وتقديم الخلاص."' : '"You don\'t close sales by pitching; you close sales by understanding."'}
+                      </h2>
+                      <p className="text-xs text-slate-400">
+                        {t.topPriorityToday} <strong className="text-amber-400">{topPriorityTask ? topPriorityTask.title : t.noPriorityTask}</strong>
+                      </p>
                     </div>
                     <button onClick={() => { setFocusTaskId(topPriorityTask ? topPriorityTask.id : null); setCurrentTab('focus'); }}
-                      className="px-4 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 hover:bg-amber-400 transition-all shrink-0">
-                      <Icon name="crosshair" className="w-4 h-4" />{t.enterFocusMode}
+                      className="px-4 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 hover:bg-amber-400 transition-all shrink-0 shadow-lg">
+                      <Icon name="crosshair" className="w-4 h-4" />
+                      {t.enterFocusMode}
                     </button>
                   </div>
 
+                  {/* 4 STATS CARDS */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
                       { label: t.deepWorkTime, val: `${deepWorkHours}h ${deepWorkMins}m`, sub: t.statDeepWorkSub, icon: 'clock', color: 'text-amber-400' },
@@ -1010,33 +1245,45 @@
                     ].map((stat, i) => (
                       <div key={i} onClick={() => stat.clickTab && setCurrentTab(stat.clickTab)}
                         className={`p-4 rounded-xl border bg-zinc-900/70 border-zinc-800 space-y-1.5 ${stat.clickTab ? 'cursor-pointer hover:border-indigo-500/50 transition-all' : ''}`}>
-                        <div className="flex items-center justify-between text-slate-400 text-xs"><span>{stat.label}</span><Icon name={stat.icon} className={`w-4 h-4 ${stat.color}`} /></div>
+                        <div className="flex items-center justify-between text-slate-400 text-xs">
+                          <span>{stat.label}</span>
+                          <Icon name={stat.icon} className={`w-4 h-4 ${stat.color}`} />
+                        </div>
                         <div className="text-lg font-black">{stat.val}</div>
                         <div className="text-[10px] text-slate-400 truncate">{stat.sub}</div>
                       </div>
                     ))}
                   </div>
 
+                  {/* TARGET PACING BANNER */}
                   {calcResults && calcResults.remaining && (
                     <div className="p-4 rounded-xl border bg-zinc-900/70 border-zinc-800 flex items-center justify-between gap-3 flex-wrap">
                       <div className="flex items-center gap-2 text-xs text-slate-300">
                         <Icon name="calculator" className="w-4 h-4 text-amber-400" />
-                        <span>{t.todaysCallPace}: <strong className="text-amber-400">{calcResults.remaining.perDay ? calcResults.remaining.perDay.calls ?? '—' : calcResults.remaining.callsR ?? '—'}</strong> {t.callsNeeded} · <strong className="text-indigo-400">{calcResults.remaining.perDay ? calcResults.remaining.perDay.visits ?? '—' : calcResults.remaining.visitsR ?? '—'}</strong> {t.visitsNeeded}</span>
+                        <span>
+                          {t.todaysCallPace}: <strong className="text-amber-400">{calcResults.remaining.perDay ? Math.ceil(calcResults.remaining.perDay.calls ?? 0) : Math.ceil(calcResults.remaining.callsR ?? 0)}</strong> {t.callsNeeded} · <strong className="text-indigo-400">{calcResults.remaining.perDay ? Math.ceil(calcResults.remaining.perDay.visits ?? 0) : Math.ceil(calcResults.remaining.visitsR ?? 0)}</strong> {t.visitsNeeded}
+                        </span>
                       </div>
                       <button onClick={addPaceTasksToMatrix}
-                        className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-[11px] flex items-center gap-1.5 hover:bg-amber-400 transition-all">
-                        <Icon name="plus" className="w-3.5 h-3.5" />{t.addTodayTasks}
+                        className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-[11px] flex items-center gap-1.5 hover:bg-amber-400 transition-all shadow-sm">
+                        <Icon name="plus" className="w-3.5 h-3.5" />
+                        {t.addTodayTasks}
                       </button>
                     </div>
                   )}
 
+                  {/* PRIORITY MATRIX & GROWTH INSIGHT */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 p-5 rounded-2xl border bg-zinc-900/70 border-zinc-800 space-y-4">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><Icon name="grid" className="w-4 h-4 text-amber-500" /><h3 className="text-sm font-bold">{t.topPriorities}</h3></div>
+                        <div className="flex items-center gap-2">
+                          <Icon name="grid" className="w-4 h-4 text-amber-500" />
+                          <h3 className="text-sm font-bold">{t.topPriorities}</h3>
+                        </div>
                         <button onClick={() => setIsTaskModalOpen(true)}
                           className="px-2.5 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-[11px] flex items-center gap-1.5 shadow-sm hover:bg-amber-400 transition-all">
-                          <Icon name="plus" className="w-3.5 h-3.5" />{t.addTask}
+                          <Icon name="plus" className="w-3.5 h-3.5" />
+                          {t.addTask}
                         </button>
                       </div>
 
@@ -1058,23 +1305,27 @@
                         ))}
                       </div>
 
-                      <button onClick={() => setCurrentTab('pipeline')} className="text-xs text-amber-400 hover:underline flex items-center gap-1">
-                        {t.viewPipeline}<Icon name="chevronRight" flip={isRTL} className="w-3 h-3" />
+                      <button onClick={() => setCurrentTab('pipeline')} className="text-xs text-amber-400 hover:underline flex items-center gap-1 font-semibold">
+                        {t.viewPipeline}
+                        <Icon name="chevronRight" flip={isRTL} className="w-3 h-3" />
                       </button>
                     </div>
 
                     <div className="p-5 rounded-2xl border bg-gradient-to-b from-indigo-950/30 to-zinc-900 border-indigo-500/20 space-y-4">
-                      <div className="flex items-center gap-2 text-indigo-400"><Icon name="lightbulb" className="w-4 h-4" /><h3 className="text-xs font-bold uppercase tracking-wider">AI Growth Insight</h3></div>
+                      <div className="flex items-center gap-2 text-indigo-400">
+                        <Icon name="lightbulb" className="w-4 h-4" />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">AI Growth Insight</h3>
+                      </div>
                       <div className="space-y-3 text-xs">
                         <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/40 space-y-1">
                           <span className="text-[10px] font-bold text-amber-400">{t.biggestWeakness}</span>
-                          <p className="text-slate-300 text-[11px]">
+                          <p className="text-slate-300 text-[11px] leading-relaxed">
                             {habitStats.weakest ? `${habitStats.weakest.title} (${habitStats.weakest.streak} ${t.dayStreak})` : t.noWeaknessData}
                           </p>
                         </div>
                         <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/40 space-y-1">
                           <span className="text-[10px] font-bold text-emerald-400">{t.biggestOpportunity}</span>
-                          <p className="text-slate-300 text-[11px]">
+                          <p className="text-slate-300 text-[11px] leading-relaxed">
                             {hottestDeal ? `${hottestDeal.name} ($${hottestDeal.value.toLocaleString()}) — ${t['stage' + hottestDeal.stage]}` : t.noOpportunity}
                           </p>
                         </div>
@@ -1084,11 +1335,12 @@
                 </div>
               )}
 
-              {}
+              {/* TAB 2: FOCUS MODE */}
               {currentTab === 'focus' && (
                 <div className="max-w-xl mx-auto p-8 rounded-3xl border border-amber-500/30 bg-zinc-900/90 shadow-2xl text-center space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
-                    <Icon name="crosshair" className="w-4 h-4" />{t.distractionFreeSession}
+                    <Icon name="crosshair" className="w-4 h-4" />
+                    {t.distractionFreeSession}
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-slate-100">{t.focusSessionTitle}</h2>
@@ -1096,7 +1348,7 @@
                   </div>
 
                   {!isTimerRunning && focusTimer === FOCUS_DURATION && (
-                    <div className="text-left space-y-2">
+                    <div className="text-start space-y-2">
                       <label className="text-[11px] font-semibold text-slate-400">{t.pickFocusTask}</label>
                       {openTasks.length === 0 ? (
                         <p className="text-xs text-slate-500 py-2">{t.noFocusTasks}</p>
@@ -1111,39 +1363,56 @@
                   )}
 
                   {focusedTask && (isTimerRunning || focusTimer < FOCUS_DURATION) && (
-                    <p className="text-xs text-slate-300"><span className="text-slate-500">{t.focusedOn}</span> <strong className="text-amber-400">{focusedTask.title}</strong></p>
+                    <p className="text-xs text-slate-300">
+                      <span className="text-slate-500">{t.focusedOn}</span>{' '}
+                      <strong className="text-amber-400">{focusedTask.title}</strong>
+                    </p>
                   )}
 
                   <div className="py-6">
-                    <div className="text-6xl font-black font-mono tracking-wider text-amber-400">{formatTimer(focusTimer)}</div>
-                    {sessionJustCompleted && focusTimer === 0 && <p className="text-xs font-semibold text-emerald-400 mt-3">{t.sessionComplete}</p>}
+                    <div className="text-6xl font-black font-mono tracking-wider text-amber-400">
+                      {formatTimer(focusTimer)}
+                    </div>
+                    {sessionJustCompleted && focusTimer === 0 && (
+                      <p className="text-xs font-semibold text-emerald-400 mt-3 animate-bounce">
+                        {t.sessionComplete}
+                      </p>
+                    )}
                   </div>
+
                   <div className="flex items-center justify-center gap-3">
                     <button disabled={focusTimer === 0} onClick={() => setIsTimerRunning(!isTimerRunning)}
                       className={`px-6 py-3 rounded-2xl font-black text-xs flex items-center gap-2 transition-all shadow-lg disabled:opacity-40 disabled:cursor-not-allowed ${isTimerRunning ? 'bg-rose-500 text-white' : 'bg-amber-500 text-slate-950 hover:bg-amber-400'}`}>
-                      <Icon name={isTimerRunning ? "pause" : "play"} className="w-4 h-4" />{isTimerRunning ? t.pauseSession : t.startFocusClock}
+                      <Icon name={isTimerRunning ? "pause" : "play"} className="w-4 h-4" />
+                      {isTimerRunning ? t.pauseSession : t.startFocusClock}
                     </button>
-                    <button onClick={() => { setIsTimerRunning(false); setFocusTimer(FOCUS_DURATION); setSessionJustCompleted(false); }} aria-label={t.cancel} className="p-3 rounded-2xl bg-zinc-800 text-slate-300 hover:bg-zinc-700">
+                    <button onClick={() => { setIsTimerRunning(false); setFocusTimer(FOCUS_DURATION); setSessionJustCompleted(false); timerEndRef.current = null; }}
+                      aria-label={t.cancel} className="p-3 rounded-2xl bg-zinc-800 text-slate-300 hover:bg-zinc-700">
                       <Icon name="rotateCcw" className="w-4 h-4" />
                     </button>
                   </div>
 
                   {sessionJustCompleted && focusedTask && !focusedTask.completed && (
                     <button onClick={() => { toggleTask(focusedTask.id); setSessionJustCompleted(false); }}
-                      className="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs flex items-center gap-2 mx-auto hover:bg-emerald-400 transition-all">
-                      <Icon name="check" className="w-4 h-4" />{t.markTaskDoneAfterSession}
+                      className="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs flex items-center gap-2 mx-auto hover:bg-emerald-400 transition-all shadow-md">
+                      <Icon name="check" className="w-4 h-4" />
+                      {t.markTaskDoneAfterSession}
                     </button>
                   )}
                 </div>
               )}
 
-              {}
+              {/* TAB 3: SALES HABITS */}
               {currentTab === 'habits' && (
                 <div className="space-y-4 animate-fadeIn">
                   <div className="flex items-center justify-between">
-                    <div><h2 className="text-lg font-bold">{t.habits}</h2><p className="text-xs text-slate-400">{t.habitsSub}</p></div>
-                    <button onClick={() => setIsAddingHabit(!isAddingHabit)} className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md">
-                      <Icon name="plus" className="w-4 h-4" />{t.addHabit}
+                    <div>
+                      <h2 className="text-lg font-bold">{t.habits}</h2>
+                      <p className="text-xs text-slate-400">{t.habitsSub}</p>
+                    </div>
+                    <button onClick={() => setIsAddingHabit(!isAddingHabit)} className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md hover:bg-amber-400 transition-all">
+                      <Icon name="plus" className="w-4 h-4" />
+                      {t.addHabit}
                     </button>
                   </div>
 
@@ -1152,7 +1421,7 @@
                       <input autoFocus value={newHabitTitle} onChange={e => setNewHabitTitle(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && addHabit()}
                         placeholder={t.addHabitPlaceholder}
-                        className="flex-1 bg-zinc-800/60 border border-zinc-700 rounded-lg px-3 py-2 text-xs outline-none focus:border-amber-500" />
+                        className="flex-1 bg-zinc-800/60 border border-zinc-700 rounded-lg px-3 py-2 text-xs outline-none focus:border-amber-500 text-slate-100" />
                       <button onClick={addHabit} className="px-3 py-2 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold">{t.save}</button>
                       <button onClick={() => { setIsAddingHabit(false); setNewHabitTitle(''); }} className="px-3 py-2 rounded-lg bg-zinc-800 text-slate-300 text-xs font-bold">{t.cancel}</button>
                     </div>
@@ -1174,7 +1443,7 @@
                         </div>
                         <div className="flex items-center gap-2">
                           <button onClick={() => toggleHabit(h.id)}
-                            className={`px-3 py-1.5 rounded-lg text-[11px] font-bold shrink-0 ${h.completedToday ? 'bg-zinc-800 text-slate-300 border border-zinc-700' : 'bg-emerald-500 text-slate-950'}`}>
+                            className={`px-3 py-1.5 rounded-lg text-[11px] font-bold shrink-0 transition-all ${h.completedToday ? 'bg-zinc-800 text-slate-300 border border-zinc-700' : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'}`}>
                             {h.completedToday ? t.markUndone : t.markDone}
                           </button>
                           <button onClick={() => deleteHabit(h.id)} aria-label={t.delete} className="reveal-on-hover p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
@@ -1187,21 +1456,36 @@
                 </div>
               )}
 
-              {}
+              {/* TAB 4: SALES JOURNAL */}
               {currentTab === 'journal' && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
-                    <div><h2 className="text-lg font-bold">{t.journal}</h2><p className="text-xs text-slate-400">{t.journalSub}</p></div>
-                    <button onClick={() => setIsJournalModalOpen(true)} className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md">
-                      <Icon name="plus" className="w-4 h-4" />{t.writeJournalEntry}
+                    <div>
+                      <h2 className="text-lg font-bold">{t.journal}</h2>
+                      <p className="text-xs text-slate-400">{t.journalSub}</p>
+                    </div>
+                    <button onClick={() => setIsJournalModalOpen(true)} className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md hover:bg-amber-400 transition-all">
+                      <Icon name="plus" className="w-4 h-4" />
+                      {t.writeJournalEntry}
                     </button>
                   </div>
 
                   <div className="p-3.5 rounded-xl border bg-zinc-900/70 border-zinc-800 flex items-center gap-5 flex-wrap text-xs">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t.todaysSnapshot}</span>
-                    <span className="text-slate-300 flex items-center gap-1.5"><Icon name="phoneCall" className="w-3.5 h-3.5 text-cyan-400" />{t.callsCompleted}: <strong className="text-cyan-400">{tasks.filter(tk => tk.category === 'Call' && tk.completed).length}</strong></span>
-                    <span className="text-slate-300 flex items-center gap-1.5"><Icon name="target" className="w-3.5 h-3.5 text-emerald-400" />{t.dealsWonLabel}: <strong className="text-emerald-400">{deals.filter(d => d.stage === 'Won').length}</strong></span>
-                    {calcResults && <span className="text-slate-300 flex items-center gap-1.5"><Icon name="calculator" className="w-3.5 h-3.5 text-amber-400" />{t.monthlyTarget}: <strong className="text-amber-400">{calcResults.progressPct}%</strong></span>}
+                    <span className="text-slate-300 flex items-center gap-1.5">
+                      <Icon name="phoneCall" className="w-3.5 h-3.5 text-cyan-400" />
+                      {t.callsCompleted}: <strong className="text-cyan-400">{tasks.filter(tk => tk.category === 'Call' && tk.completed).length}</strong>
+                    </span>
+                    <span className="text-slate-300 flex items-center gap-1.5">
+                      <Icon name="target" className="w-3.5 h-3.5 text-emerald-400" />
+                      {t.dealsWonLabel}: <strong className="text-emerald-400">{deals.filter(d => d.stage === 'Won').length}</strong>
+                    </span>
+                    {calcResults && (
+                      <span className="text-slate-300 flex items-center gap-1.5">
+                        <Icon name="calculator" className="w-3.5 h-3.5 text-amber-400" />
+                        {t.monthlyTarget}: <strong className="text-amber-400">{calcResults.progressPct}%</strong>
+                      </span>
+                    )}
                   </div>
 
                   {journalEntries.length === 0 && (
@@ -1223,10 +1507,12 @@
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                           <div className="p-3 rounded-xl bg-emerald-950/10 border border-emerald-500/20">
-                            <span className="font-bold text-emerald-400">{t.whatWentWell}</span><p className="text-slate-300 mt-1">{j.whatWentWell}</p>
+                            <span className="font-bold text-emerald-400">{t.whatWentWell}</span>
+                            <p className="text-slate-300 mt-1 leading-relaxed">{j.whatWentWell}</p>
                           </div>
                           <div className="p-3 rounded-xl bg-indigo-950/10 border border-indigo-500/20">
-                            <span className="font-bold text-indigo-400">{t.whatILearned}</span><p className="text-slate-300 mt-1">{j.whatILearned}</p>
+                            <span className="font-bold text-indigo-400">{t.whatILearned}</span>
+                            <p className="text-slate-300 mt-1 leading-relaxed">{j.whatILearned}</p>
                           </div>
                         </div>
                       </div>
@@ -1235,13 +1521,17 @@
                 </div>
               )}
 
-              {}
+              {/* TAB 5: DEALS & PIPELINE */}
               {currentTab === 'pipeline' && (
                 <div className="space-y-4 animate-fadeIn">
                   <div className="flex items-center justify-between">
-                    <div><h2 className="text-lg font-bold">{t.pipeline}</h2><p className="text-xs text-slate-400">{t.pipelineSub}</p></div>
-                    <button onClick={() => setIsDealModalOpen(true)} className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md">
-                      <Icon name="plus" className="w-4 h-4" />{t.addDeal}
+                    <div>
+                      <h2 className="text-lg font-bold">{t.pipeline}</h2>
+                      <p className="text-xs text-slate-400">{t.pipelineSub}</p>
+                    </div>
+                    <button onClick={() => setIsDealModalOpen(true)} className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md hover:bg-amber-400 transition-all">
+                      <Icon name="plus" className="w-4 h-4" />
+                      {t.addDeal}
                     </button>
                   </div>
 
@@ -1255,12 +1545,12 @@
                       const draft = noteDrafts[deal.id] || { type: 'note', content: '' };
                       return (
                         <div key={deal.id} className="group-item rounded-2xl border bg-zinc-900/70 border-zinc-800 overflow-hidden">
-                          <div className="w-full p-4 flex items-center justify-between gap-3 text-left">
+                          <div className="w-full p-4 flex items-center justify-between gap-3 text-start">
                             <button onClick={() => setExpandedDealId(isOpen ? null : deal.id)} className="flex items-center gap-3 flex-1 min-w-0">
                               <Icon name="chevronDown" className={`w-4 h-4 text-slate-500 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
-                              <div className="min-w-0 text-left">
+                              <div className="min-w-0 text-start">
                                 <p className="text-sm font-bold text-slate-100 truncate">{deal.name}</p>
-                                <p className="text-[11px] text-slate-400">${deal.value.toLocaleString()} • {deal.notes.length} {t.pipeline}</p>
+                                <p className="text-[11px] text-slate-400 font-mono">${deal.value.toLocaleString()} • {deal.notes.length} {lang === 'ar' ? 'ملاحظات وتحديثات' : 'updates'}</p>
                               </div>
                             </button>
                             <div className="flex items-center gap-2 shrink-0">
@@ -1275,17 +1565,19 @@
                           </div>
 
                           {isOpen && (
-                            <div className="border-t border-zinc-800 p-4 space-y-3">
+                            <div className="border-t border-zinc-800 p-4 space-y-3 bg-zinc-900/40">
                               {deal.notes.length === 0 && <p className="text-xs text-slate-500">{t.noNotes}</p>}
                               {deal.notes.map(n => (
                                 <div key={n.id} className="group-item flex items-start gap-2.5 text-xs">
-                                  <div className="p-1.5 rounded-lg bg-zinc-800 shrink-0 mt-0.5"><Icon name={NOTE_ICONS[n.type]} className="w-3.5 h-3.5 text-amber-400" /></div>
+                                  <div className="p-1.5 rounded-lg bg-zinc-800 shrink-0 mt-0.5">
+                                    <Icon name={NOTE_ICONS[n.type]} className="w-3.5 h-3.5 text-amber-400" />
+                                  </div>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-0.5">
                                       <span className="font-mono text-[10px] text-slate-500">{n.date}</span>
                                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-slate-400">{t['noteType' + n.type.charAt(0).toUpperCase() + n.type.slice(1)]}</span>
                                     </div>
-                                    <p className="text-slate-300">{n.content}</p>
+                                    <p className="text-slate-300 leading-relaxed">{n.content}</p>
                                   </div>
                                   <button onClick={() => deleteNote(deal.id, n.id)} aria-label={t.delete} className="reveal-on-hover shrink-0 p-1 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
                                     <Icon name="trash" className="w-3.5 h-3.5" />
@@ -1297,15 +1589,18 @@
                                 <div className="flex items-center gap-2">
                                   {['call', 'objection', 'note'].map(type => (
                                     <button key={type} onClick={() => setNoteDrafts({ ...noteDrafts, [deal.id]: { ...draft, type } })}
-                                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border flex items-center gap-1 ${draft.type === type ? 'bg-amber-500 text-slate-950 border-amber-500' : 'bg-zinc-800 text-slate-400 border-zinc-700'}`}>
-                                      <Icon name={NOTE_ICONS[type]} className="w-3 h-3" />{t['noteType' + type.charAt(0).toUpperCase() + type.slice(1)]}
+                                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border flex items-center gap-1 transition-all ${draft.type === type ? 'bg-amber-500 text-slate-950 border-amber-500' : 'bg-zinc-800 text-slate-400 border-zinc-700'}`}>
+                                      <Icon name={NOTE_ICONS[type]} className="w-3 h-3" />
+                                      {t['noteType' + type.charAt(0).toUpperCase() + type.slice(1)]}
                                     </button>
                                   ))}
                                 </div>
                                 <textarea rows={2} value={draft.content} onChange={e => setNoteDrafts({ ...noteDrafts, [deal.id]: { ...draft, content: e.target.value } })}
                                   placeholder={t.notePlaceholder}
                                   className="w-full p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500 resize-none" />
-                                <button onClick={() => addNoteToDeal(deal.id)} className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold">{t.addNote}</button>
+                                <button onClick={() => addNoteToDeal(deal.id)} className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold hover:bg-amber-400 transition-all shadow-sm">
+                                  {t.addNote}
+                                </button>
                               </div>
                             </div>
                           )}
@@ -1316,7 +1611,7 @@
                 </div>
               )}
 
-              {}
+              {/* TAB 6: TARGET CALCULATOR */}
               {currentTab === 'calculator' && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between flex-wrap gap-2">
@@ -1326,10 +1621,12 @@
                     </div>
                     <div className="flex items-center gap-2">
                       <button onClick={() => setCurrentTab('dashboard')} className="px-2.5 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-[11px] font-semibold text-slate-300 hover:border-amber-500/50 flex items-center gap-1.5 transition-all">
-                        <Icon name="grid" className="w-3.5 h-3.5 text-amber-400" />{t.topPriorities}
+                        <Icon name="grid" className="w-3.5 h-3.5 text-amber-400" />
+                        {t.topPriorities}
                       </button>
                       <button onClick={() => setCurrentTab('pipeline')} className="px-2.5 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-[11px] font-semibold text-slate-300 hover:border-amber-500/50 flex items-center gap-1.5 transition-all">
-                        <Icon name="kanban" className="w-3.5 h-3.5 text-rose-400" />{t.pipeline}
+                        <Icon name="kanban" className="w-3.5 h-3.5 text-rose-400" />
+                        {t.pipeline}
                       </button>
                     </div>
                   </div>
@@ -1368,7 +1665,7 @@
                       </div>
                       <div>
                         <label className="text-[11px] font-semibold text-slate-400">{t.workingDaysOptional}</label>
-                        <input type="number" min="0" value={calcForm.workingDays}
+                        <input type="number" min="1" max="31" value={calcForm.workingDays}
                           onChange={e => setCalcForm({ ...calcForm, workingDays: e.target.value })}
                           placeholder="22"
                           className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500" />
@@ -1390,7 +1687,7 @@
                           <div className="space-y-1.5">
                             <div className="flex items-center justify-between text-[11px]">
                               <span className="text-slate-400">{t.progressSoFar}: <strong className="text-emerald-400">${Math.round(wonRevenue).toLocaleString()}</strong></span>
-                              <span className="text-slate-400">{calcResults.progressPct}%</span>
+                              <span className="text-slate-400 font-mono font-bold">{calcResults.progressPct}%</span>
                             </div>
                             <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
                               <div className="h-full bg-gradient-to-r from-emerald-500 to-amber-400 transition-all" style={{ width: `${calcResults.progressPct}%` }}></div>
@@ -1398,9 +1695,11 @@
                           </div>
 
                           {calcResults.remainingAmount <= 0 ? (
-                            <p className="text-xs text-emerald-400 font-semibold text-center py-2">{t.targetAchieved}</p>
+                            <p className="text-xs text-emerald-400 font-bold text-center py-2">{t.targetAchieved}</p>
                           ) : (
-                            <p className="text-[11px] text-slate-400">{t.remainingToGoal}: <strong className="text-amber-400">${Math.round(calcResults.remainingAmount).toLocaleString()}</strong></p>
+                            <p className="text-[11px] text-slate-400">
+                              {t.remainingToGoal}: <strong className="text-amber-400 font-mono">${Math.round(calcResults.remainingAmount).toLocaleString()}</strong>
+                            </p>
                           )}
 
                           <div className="flex items-stretch gap-1.5">
@@ -1429,15 +1728,15 @@
                               <span className="text-[10px] font-bold text-amber-400">{t.calcDailyPace}</span>
                               <div className="grid grid-cols-3 gap-2 text-center">
                                 <div>
-                                  <div className="text-sm font-black text-slate-100">{calcResults.perDay.calls ?? '—'}</div>
+                                  <div className="text-sm font-black text-slate-100 font-mono">{calcResults.perDay.calls !== null ? Math.ceil(calcResults.perDay.calls) : '—'}</div>
                                   <div className="text-[10px] text-slate-400">{t.callsNeeded} / {t.perDay}</div>
                                 </div>
                                 <div>
-                                  <div className="text-sm font-black text-slate-100">{calcResults.perDay.visits ?? '—'}</div>
+                                  <div className="text-sm font-black text-slate-100 font-mono">{calcResults.perDay.visits !== null ? Math.ceil(calcResults.perDay.visits) : '—'}</div>
                                   <div className="text-[10px] text-slate-400">{t.visitsNeeded} / {t.perDay}</div>
                                 </div>
                                 <div>
-                                  <div className="text-sm font-black text-slate-100">{calcResults.perDay.deals}</div>
+                                  <div className="text-sm font-black text-slate-100 font-mono">{calcResults.perDay.deals}</div>
                                   <div className="text-[10px] text-slate-400">{t.dealsNeeded} / {t.perDay}</div>
                                 </div>
                               </div>
@@ -1446,8 +1745,9 @@
 
                           {calcResults.remainingAmount > 0 && calcResults.remaining && calcResults.remaining.perDay && (
                             <button onClick={addPaceTasksToMatrix}
-                              className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all flex items-center justify-center gap-2">
-                              <Icon name="grid" className="w-4 h-4" />{t.addTodayTasks}
+                              className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all flex items-center justify-center gap-2 shadow-md">
+                              <Icon name="grid" className="w-4 h-4" />
+                              {t.addTodayTasks}
                             </button>
                           )}
                         </div>
@@ -1460,7 +1760,7 @@
             </div>
           </main>
 
-          {}
+          {/* SEARCH MODAL */}
           {isSearchOpen && (
             <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-24 px-4" onClick={() => setIsSearchOpen(false)}>
               <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-fadeIn" onClick={e => e.stopPropagation()}>
@@ -1468,14 +1768,16 @@
                   <Icon name="search" className="w-4 h-4 text-slate-400 shrink-0" />
                   <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchPlaceholder}
                     aria-label={t.searchPlaceholder}
-                    className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-500" />
-                  <button onClick={() => setIsSearchOpen(false)} aria-label={t.close} className="p-1 text-slate-400 hover:text-white"><Icon name="x" className="w-4 h-4" /></button>
+                    className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-500 text-slate-100" />
+                  <button onClick={() => setIsSearchOpen(false)} aria-label={t.close} className="p-1 text-slate-400 hover:text-white">
+                    <Icon name="x" className="w-4 h-4" />
+                  </button>
                 </div>
                 <div className="max-h-80 overflow-y-auto p-2">
                   {searchQuery.trim() === '' && <p className="text-xs text-slate-500 text-center py-6">{t.searchHint}</p>}
                   {searchQuery.trim() !== '' && filteredSearchResults.length === 0 && <p className="text-xs text-slate-500 text-center py-6">{t.noSearchResults}</p>}
                   {filteredSearchResults.map(item => (
-                    <button key={item.id} onClick={() => goToTab(item.tab)} className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-zinc-800 flex items-center justify-between gap-2 transition-all">
+                    <button key={item.id} onClick={() => goToTab(item.tab)} className="w-full text-start px-3 py-2.5 rounded-xl hover:bg-zinc-800 flex items-center justify-between gap-2 transition-all">
                       <span className="text-xs text-slate-200 truncate">{item.title}</span>
                       <span className="text-[10px] shrink-0 px-2 py-0.5 rounded bg-zinc-800 text-slate-400 border border-zinc-700">{item.type}</span>
                     </button>
@@ -1485,13 +1787,15 @@
             </div>
           )}
 
-          {}
+          {/* JOURNAL MODAL */}
           {isJournalModalOpen && (
             <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4" onClick={() => setIsJournalModalOpen(false)}>
               <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto animate-fadeIn" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                   <h3 className="font-bold text-sm text-slate-100">{t.writeJournalEntry}</h3>
-                  <button onClick={() => setIsJournalModalOpen(false)} aria-label={t.close} className="p-1 text-slate-400 hover:text-white"><Icon name="x" className="w-4 h-4" /></button>
+                  <button onClick={() => setIsJournalModalOpen(false)} aria-label={t.close} className="p-1 text-slate-400 hover:text-white">
+                    <Icon name="x" className="w-4 h-4" />
+                  </button>
                 </div>
                 <div className="space-y-3">
                   {[
@@ -1517,13 +1821,13 @@
                 </div>
                 <div className="flex items-center gap-2 pt-2">
                   <button onClick={() => setIsJournalModalOpen(false)} className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-slate-300 font-bold text-xs hover:bg-zinc-700 transition-all">{t.cancel}</button>
-                  <button onClick={addJournalEntry} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all">{t.save}</button>
+                  <button onClick={addJournalEntry} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all shadow-md">{t.save}</button>
                 </div>
               </div>
             </div>
           )}
 
-          {}
+          {/* DEAL MODAL */}
           {isDealModalOpen && (
             <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4" onClick={() => setIsDealModalOpen(false)}>
               <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-fadeIn" onClick={e => e.stopPropagation()}>
@@ -1540,7 +1844,7 @@
                   </div>
                   <div>
                     <label className="text-[11px] font-semibold text-slate-400">{t.dealValue}</label>
-                    <input type="number" min="0" value={newDeal.value} onChange={e => setNewDeal({ ...newDeal, value: e.target.value })}
+                    <input type="number" min="0" value={newDeal.value} onChange={e => setNewDeal({ ...newDeal, value: Math.max(0, Number(e.target.value)) })}
                       className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500" />
                   </div>
                   <div>
@@ -1554,13 +1858,13 @@
                 </div>
                 <div className="flex items-center gap-2 pt-2">
                   <button onClick={() => setIsDealModalOpen(false)} className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-slate-300 font-bold text-xs hover:bg-zinc-700 transition-all">{t.cancel}</button>
-                  <button onClick={addDeal} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all">{t.save}</button>
+                  <button onClick={addDeal} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all shadow-md">{t.save}</button>
                 </div>
               </div>
             </div>
           )}
 
-          {}
+          {/* TASK MODAL */}
           {isTaskModalOpen && (
             <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4" onClick={() => setIsTaskModalOpen(false)}>
               <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-fadeIn" onClick={e => e.stopPropagation()}>
@@ -1577,7 +1881,7 @@
                   </div>
                   <div>
                     <label className="text-[11px] font-semibold text-slate-400">{t.taskDuration}</label>
-                    <input type="number" min="5" step="5" value={newTask.duration} onChange={e => setNewTask({ ...newTask, duration: e.target.value })}
+                    <input type="number" min="5" step="5" value={newTask.duration} onChange={e => setNewTask({ ...newTask, duration: Math.max(5, Number(e.target.value)) })}
                       className="w-full mt-1 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500" />
                   </div>
                   <div>
@@ -1610,40 +1914,89 @@
                 </div>
                 <div className="flex items-center gap-2 pt-2">
                   <button onClick={() => setIsTaskModalOpen(false)} className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-slate-300 font-bold text-xs hover:bg-zinc-700 transition-all">{t.cancel}</button>
-                  <button onClick={addTask} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all">{t.save}</button>
+                  <button onClick={addTask} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all shadow-md">{t.save}</button>
                 </div>
               </div>
             </div>
           )}
 
-          {}
+          {/* AI COACH SLIDE-OVER MODAL */}
           {isAICoachOpen && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end">
-              <div className="w-full max-w-md bg-zinc-900 border-l border-zinc-800 h-full p-6 flex flex-col justify-between space-y-4">
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end animate-fadeIn" onClick={() => setIsAICoachOpen(false)}>
+              <div className="w-full max-w-md bg-zinc-900 border-s border-zinc-800 h-full p-6 flex flex-col justify-between space-y-4 overflow-y-auto" onClick={e => e.stopPropagation()}>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-                    <div className="flex items-center gap-2"><Icon name="bot" className="w-5 h-5 text-indigo-400" /><h3 className="font-bold text-slate-100">{t.aiCoach}</h3></div>
-                    <button onClick={() => setIsAICoachOpen(false)} aria-label={t.close} className="p-1 text-slate-400 hover:text-white"><Icon name="x" className="w-5 h-5" /></button>
+                  <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Icon name="bot" className="w-5 h-5 text-indigo-400" />
+                      <div>
+                        <h3 className="font-bold text-sm text-slate-100">{t.aiCoach}</h3>
+                        <span className="text-[10px] text-indigo-400 font-semibold">
+                          {geminiApiKey ? t.aiGeminiLiveBadge : t.aiLocalEngineBadge}
+                        </span>
+                      </div>
+                    </div>
+                    <button onClick={() => setIsAICoachOpen(false)} aria-label={t.close} className="p-1 text-slate-400 hover:text-white">
+                      <Icon name="x" className="w-4 h-4" />
+                    </button>
                   </div>
+
+                  {/* Optional Gemini API Key configuration */}
+                  <div className="p-3 rounded-xl bg-zinc-800/40 border border-zinc-700/50 space-y-2">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-slate-400 font-medium flex items-center gap-1">
+                        <Icon name="key" className="w-3.5 h-3.5 text-amber-400" />
+                        {t.apiKeyOptional}
+                      </span>
+                      <button onClick={() => setIsEditingKey(!isEditingKey)} className="text-[10px] text-amber-400 hover:underline">
+                        {isEditingKey ? t.close : (geminiApiKey ? 'تعديل' : 'إضافة')}
+                      </button>
+                    </div>
+                    {isEditingKey && (
+                      <div className="flex gap-2 pt-1">
+                        <input type="password" value={geminiApiKey} onChange={e => setGeminiApiKey(e.target.value)}
+                          placeholder="AIzaSy..."
+                          className="flex-1 p-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500" />
+                        <button onClick={() => { localStorage.setItem(LS_GEMINI_KEY, geminiApiKey); setIsEditingKey(false); showToast(t.save); }}
+                          className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400">
+                          {t.saveApiKey}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                   {isAiLoading ? (
-                    <div className="flex items-center justify-center py-12 text-xs text-amber-400 gap-2"><Icon name="sparkles" className="w-4 h-4 animate-spin" /><span>{t.aiAnalyzing}</span></div>
+                    <div className="flex flex-col items-center justify-center py-12 text-xs text-amber-400 gap-3">
+                      <Icon name="sparkles" className="w-6 h-6 animate-spin text-amber-400" />
+                      <span>{t.aiAnalyzing}</span>
+                    </div>
                   ) : (
-                    <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs text-slate-200 leading-relaxed whitespace-pre-line">{aiCoachResponse}</div>
+                    <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs text-slate-200 leading-relaxed whitespace-pre-line shadow-inner">
+                      {aiCoachResponse}
+                    </div>
                   )}
                 </div>
-                <button onClick={() => setIsAICoachOpen(false)} className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all">{t.applyCoaching}</button>
+
+                <button onClick={() => setIsAICoachOpen(false)}
+                  className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all shadow-md">
+                  {t.applyCoaching}
+                </button>
               </div>
             </div>
           )}
 
-          {}
+          {/* AUTH MODAL FOR GUESTS */}
+          <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)}
+            t={t} onLoginSuccess={handleLoginSuccess}
+            currentGuestData={{ habits, journalEntries, tasks, deals, calcForm, totalFocusMinutes }} />
+
+          {/* GLOBAL TOAST */}
           {toast && (
             <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-zinc-900 border border-amber-500/40 shadow-2xl text-xs font-semibold text-slate-100 animate-fadeIn">
               {toast}
             </div>
           )}
 
-          {}
+          {/* FLOATING ACTION BUTTON (FAB) */}
           <div className={`fixed bottom-6 ${isRTL ? 'left-6' : 'right-6'} z-40 flex flex-col items-end gap-2`}>
             {isFABOpen && (
               <div className="flex flex-col gap-2 animate-fadeIn">
@@ -1661,7 +2014,8 @@
                 </button>
               </div>
             )}
-            <button onClick={() => setIsFABOpen(!isFABOpen)} aria-label={t.quickAction} className="w-14 h-14 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-2xl flex items-center justify-center transition-all" title={t.quickAction}>
+            <button onClick={() => setIsFABOpen(!isFABOpen)} aria-label={t.quickAction}
+              className="w-14 h-14 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-2xl flex items-center justify-center transition-all" title={t.quickAction}>
               <Icon name={isFABOpen ? 'x' : 'plus'} className="w-6 h-6" />
             </button>
           </div>
@@ -1670,80 +2024,9 @@
       );
     }
 
-    function Root() {
-      const [lang] = useState('en');
-      const t = TRANSLATIONS[lang];
-      const [session, setSession] = useState(undefined); // undefined = checking, null = logged out
-
-      useEffect(() => {
-        if (SUPABASE_READY) {
-          supabaseClient.auth.getSession().then(({ data }) => {
-            setSession(data.session ? { id: data.session.user.id, email: data.session.user.email } : null);
-          });
-          const { data: listener } = supabaseClient.auth.onAuthStateChange((_event, newSession) => {
-            setSession(newSession ? { id: newSession.user.id, email: newSession.user.email } : null);
-          });
-          return () => listener.subscription.unsubscribe();
-        } else {
-          try {
-            const id = localStorage.getItem(LS_SESSION_KEY);
-            if (id) {
-              const accounts = readAccounts();
-              const record = accounts[id];
-              setSession(record ? { id, email: record.email } : null);
-            } else {
-              setSession(null);
-            }
-          } catch (e) {
-            setSession(null);
-          }
-        }
-      }, []);
-
-      if (session === undefined) {
-        return (
-          <div className="min-h-screen bg-[#09090b] text-slate-100 flex items-center justify-center">
-            <Icon name="sparkles" className="w-5 h-5 text-amber-400 animate-spin" />
-          </div>
-        );
-      }
-
-      if (session === null) {
-        if (SUPABASE_READY) {
-          return (
-            <AuthScreen t={t} isRTL={false} localMode={false}
-              onLogin={async (email, password) => {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                setSession({ id: data.session.user.id, email: data.session.user.email });
-              }}
-              onSignup={async (email, password) => {
-                const { data, error } = await supabaseClient.auth.signUp({ email, password });
-                if (error) throw error;
-                if (data.session) { setSession({ id: data.session.user.id, email: data.session.user.email }); return; }
-                return 'PENDING_EMAIL_CONFIRM';
-              }} />
-          );
-        }
-        return (
-          <AuthScreen t={t} isRTL={false} localMode={true}
-            onLogin={async (email, password) => setSession(await localLogin(email, password))}
-            onSignup={async (email, password) => setSession(await localSignup(email, password))} />
-        );
-      }
-
-      return (
-        <App session={session} onLogout={async () => {
-          if (SUPABASE_READY) await supabaseClient.auth.signOut();
-          else await localLogout();
-          setSession(null);
-        }} />
-      );
-    }
-
     const rootElement = document.getElementById('root');
     const root = ReactDOM.createRoot(rootElement);
-    root.render(<Root />);
+    root.render(<SalesOSApp />);
   </script>
 </body>
 </html>
