@@ -423,7 +423,6 @@
     }
 
     // ============ SMART LOCAL AI COACH ENGINE ============
-    // Generates bespoke, tactical executive advice even when offline or without an API key!
     function generateSmartLocalCoaching(deals, tasks, habits, lang) {
       const isAr = lang === 'ar';
       const openHigh = tasks.filter(tk => !tk.completed && tk.priority === 'High');
@@ -492,7 +491,7 @@
     // AUTH MODAL (OPTIONAL - GUESTS CAN OPEN AT WILL)
     // ==========================================
     function AuthModal({ isOpen, onClose, t, onLoginSuccess, currentGuestData }) {
-      const [mode, setMode] = useState('login'); // 'login' or 'signup'
+      const [mode, setMode] = useState('login');
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
       const [keepData, setKeepData] = useState(true);
@@ -522,7 +521,6 @@
               }
             }
           } else {
-            // LocalStorage Accounts
             const accounts = readAccounts();
             if (mode === 'signup') {
               if (accounts[cleanEmail]) throw new Error('EMAIL_TAKEN');
@@ -615,7 +613,6 @@
     // MAIN APP COMPONENT
     // ==========================================
     function SalesOSApp() {
-      // Language state initialized from localStorage with fallback to Arabic
       const [lang, setLang] = useState(() => localStorage.getItem(LS_LANG_KEY) || 'ar');
       const [theme, setTheme] = useState('dark');
       const [currentTab, setCurrentTab] = useState('dashboard');
@@ -623,7 +620,7 @@
       const t = TRANSLATIONS[lang] || TRANSLATIONS.ar;
       const isRTL = lang === 'ar';
 
-      // Authentication Session (Guest Mode by Default!)
+      // Authentication Session (Guest Mode by Default)
       const [session, setSession] = useState(() => {
         try {
           const savedSessionId = localStorage.getItem(LS_SESSION_KEY);
@@ -634,7 +631,6 @@
             }
           }
         } catch (e) {}
-        // Default: Guest Demo Session (Zero login barrier!)
         return { id: GUEST_ID, email: 'Guest (وضع التجربة)', isGuest: true };
       });
 
@@ -648,7 +644,7 @@
       const [totalFocusMinutes, setTotalFocusMinutes] = useState(45);
       const [calcForm, setCalcForm] = useState(DEFAULT_CALC_FORM);
 
-      // Focus Timer State (Timestamp-backed to prevent drift in background tabs!)
+      // Focus Timer State (Timestamp-backed to prevent drift)
       const FOCUS_DURATION = 25 * 60;
       const [focusTimer, setFocusTimer] = useState(FOCUS_DURATION);
       const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -726,7 +722,7 @@
         return () => clearInterval(interval);
       }, [isTimerRunning]);
 
-      // Keyboard shortcuts ('/' for search, 'Esc' for closing modals)
+      // Keyboard shortcuts
       useEffect(() => {
         const handleKeyDown = (e) => {
           if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
@@ -775,7 +771,7 @@
         return () => { cancelled = true; };
       }, [session.id]);
 
-      // Auto-save data on every change
+      // Auto-save data on change
       useEffect(() => {
         if (!dataLoadedRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -792,7 +788,6 @@
 
       const handleLoginSuccess = (newSession, keepData) => {
         if (keepData) {
-          // Carry current guest data over to new account!
           const payload = { habits, journalEntries, tasks, deals, calcForm, totalFocusMinutes };
           localStorage.setItem(LS_DATA_PREFIX + newSession.id, JSON.stringify(payload));
         }
@@ -804,14 +799,13 @@
       const handleLogout = () => {
         if (!window.confirm(t.confirmLogout)) return;
         localStorage.removeItem(LS_SESSION_KEY);
-        // Fall back to Guest mode smoothly
         setSession({ id: GUEST_ID, email: 'Guest (وضع التجربة)', isGuest: true });
         showToast(lang === 'ar' ? 'تم تسجيل الخروج والعودة لوضع التجربة.' : 'Returned to Guest Mode.');
       };
 
       const openTasks = useMemo(() => tasks.filter(tk => !tk.completed), [tasks]);
 
-      // Run AI Coach Analysis (Smart local engine + optional Gemini Live)
+      // AI Coach Analysis
       const runAICoachAnalysis = async () => {
         setIsAiLoading(true);
         setIsAICoachOpen(true);
@@ -837,7 +831,6 @@
         if (result) {
           setAiCoachResponse(result);
         } else {
-          // Robust local expert system
           const localCoaching = generateSmartLocalCoaching(deals, tasks, habits, lang);
           setAiCoachResponse(localCoaching);
         }
@@ -929,7 +922,7 @@
       };
       const toggleTask = (id) => setTasks(tasks.map(tk => tk.id === id ? { ...tk, completed: !tk.completed } : tk));
 
-      // Search Items List
+      // Search
       const searchableItems = useMemo(() => {
         const items = [];
         habits.forEach(h => items.push({ id: 'habit-' + h.id, title: h.title, type: t.habits, tab: 'habits' }));
@@ -985,7 +978,6 @@
         return { pct, bestStreak, weakest };
       }, [habits]);
 
-      // Mathematical Funnel Calculations
       const buildFunnel = (targetAmount, avgDeal, closeRate, meetingRate, workingDays) => {
         if (!targetAmount || !avgDeal || targetAmount <= 0 || avgDeal <= 0) return null;
         const deals = targetAmount / avgDeal;
@@ -1103,7 +1095,7 @@
                 </div>
               </div>
 
-              {/* ACCOUNT / GUEST STATUS PILL (OPTIONAL AUTH GATEWAY) */}
+              {/* ACCOUNT / GUEST STATUS PILL */}
               <div className="p-2.5 mb-4 rounded-xl bg-zinc-800/40 border border-zinc-700/50 flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-1 text-[11px]">
                   <span className="flex items-center gap-1.5 font-bold truncate">
@@ -1173,7 +1165,7 @@
           {/* MAIN CONTENT AREA */}
           <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
 
-            {/* TOP HEADER BAR */}
+            {/* TOP HEADER BAR (CORRECTED CLOSING BUTTON TAG) */}
             <header className={`h-16 px-6 border-b ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]/80' : 'border-slate-200 bg-white/80'} backdrop-blur-md sticky top-0 z-20 flex items-center justify-between gap-4`}>
               <button onClick={() => setIsSearchOpen(true)}
                 className="flex-1 max-w-md flex items-center justify-between px-3.5 py-2 rounded-xl text-xs bg-zinc-900 text-slate-400 border border-zinc-800 hover:border-slate-500 transition-all">
@@ -1182,7 +1174,7 @@
                   <span>{t.searchPlaceholder}</span>
                 </div>
                 <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded border border-slate-700 font-mono">/</kbd>
-              </header>
+              </button>
 
               <div className="flex items-center gap-2">
                 <button onClick={() => setIsJournalModalOpen(true)}
@@ -1940,7 +1932,7 @@
                     </button>
                   </div>
 
-                  {/* Optional Gemini API Key configuration */}
+                  {/* Optional Gemini API Key */}
                   <div className="p-3 rounded-xl bg-zinc-800/40 border border-zinc-700/50 space-y-2">
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-slate-400 font-medium flex items-center gap-1">
