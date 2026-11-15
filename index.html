@@ -20,10 +20,10 @@
     };
   </script>
 
-  <!-- React 18, Babel & Supabase CDN -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- React 18, Babel & Supabase CDN (Direct Exact Versions for 100% Safari & WebKit Compatibility) -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.24.0/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
   <!-- Google Font: Cairo for Luxury Arabic & Inter for English -->
@@ -48,19 +48,41 @@
       to { opacity: 1; transform: translateY(0); }
     }
     .group-item:hover .reveal-on-hover { opacity: 1; }
-    .reveal-on-hover { opacity: 0; transition: opacity 0.15s ease; }
-    @media (hover: none) { .reveal-on-hover { opacity: 1; } }
+    .reveal-on-hover { opacity: 0.85; transition: opacity 0.15s ease; }
+    @media (min-width: 769px) and (hover: hover) {
+      .reveal-on-hover { opacity: 0; }
+      .group-item:hover .reveal-on-hover { opacity: 1; }
+    }
+    /* Mobile & Tablet iOS Optimizations */
+    @media screen and (max-width: 768px) {
+      input, select, textarea {
+        font-size: 16px !important; /* Prevents unwanted iOS Safari input zoom */
+      }
+    }
+    .pb-safe {
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+    .pt-safe {
+      padding-top: max(10px, env(safe-area-inset-top));
+    }
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
   </style>
 </head>
 <body class="bg-[#09090b] text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950 transition-colors duration-200">
-  <div id="root"></div>
+  <div id="root">
+    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#09090b;color:#f59e0b;font-family:'Cairo',sans-serif;font-size:14px;gap:12px;">
+      <div style="width:32px;height:32px;border:3px solid rgba(245,158,11,0.2);border-top-color:#f59e0b;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+      <span style="color:#e2e8f0;font-weight:600;font-size:13px;">جاري تحميل نظام التشغيل الشخصي للمبيعات...</span>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    </div>
+  </div>
 
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
 
     // ============ OPTIONAL SUPABASE CONFIGURATION ============
-    // If you want cloud syncing across devices, enter your Supabase credentials below.
-    // If left empty, Sales OS operates completely offline in LocalStorage (Zero setup needed).
     const SUPABASE_URL = "";
     const SUPABASE_ANON_KEY = "";
     const SUPABASE_READY = !!(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
@@ -74,14 +96,30 @@
     const LS_GEMINI_KEY = 'sales_os_gemini_key';
     const GUEST_ID = 'guest_demo_user';
 
-    // Audio Chime synthesizer via Web Audio API (Zero external assets needed)
+    // Bulletproof Safari & iOS safeStorage wrapper (Protects against Private Browsing / SecurityError)
+    const safeStorage = {
+      getItem: (key) => {
+        try { return window.localStorage ? window.localStorage.getItem(key) : null; }
+        catch (e) { return null; }
+      },
+      setItem: (key, val) => {
+        try { if (window.localStorage) window.localStorage.setItem(key, val); }
+        catch (e) {}
+      },
+      removeItem: (key) => {
+        try { if (window.localStorage) window.localStorage.removeItem(key); }
+        catch (e) {}
+      }
+    };
+
+    // Audio Chime synthesizer via Web Audio API
     function playChimeSound() {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
         const ctx = new AudioCtx();
         const now = ctx.currentTime;
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -94,9 +132,7 @@
           osc.start(now + idx * 0.12);
           osc.stop(now + idx * 0.12 + 0.35);
         });
-      } catch (e) {
-        // AudioContext might be blocked until user gesture, safely ignore
-      }
+      } catch (e) {}
     }
 
     const Icon = ({ name, className = "w-4 h-4", flip = false }) => {
@@ -416,10 +452,10 @@
 
     // ============ LOCAL ACCOUNTS HELPER ============
     function readAccounts() {
-      try { return JSON.parse(localStorage.getItem(LS_ACCOUNTS_KEY) || '{}'); } catch (e) { return {}; }
+      try { return JSON.parse(safeStorage.getItem(LS_ACCOUNTS_KEY) || '{}'); } catch (e) { return {}; }
     }
     function writeAccounts(accounts) {
-      localStorage.setItem(LS_ACCOUNTS_KEY, JSON.stringify(accounts));
+      safeStorage.setItem(LS_ACCOUNTS_KEY, JSON.stringify(accounts));
     }
 
     // ============ SMART LOCAL AI COACH ENGINE ============
@@ -545,8 +581,9 @@
       };
 
       return (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-          <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-fadeIn" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+          <div className="w-full max-w-sm sm:max-w-md bg-zinc-900 border-t sm:border border-zinc-800 rounded-t-3xl sm:rounded-2xl shadow-2xl p-6 space-y-4 animate-fadeIn pb-safe" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-zinc-700/80 rounded-full mx-auto sm:hidden -mt-1 mb-2"></div>
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
@@ -613,7 +650,7 @@
     // MAIN APP COMPONENT
     // ==========================================
     function SalesOSApp() {
-      const [lang, setLang] = useState(() => localStorage.getItem(LS_LANG_KEY) || 'ar');
+      const [lang, setLang] = useState(() => safeStorage.getItem(LS_LANG_KEY) || 'ar');
       const [theme, setTheme] = useState('dark');
       const [currentTab, setCurrentTab] = useState('dashboard');
 
@@ -623,7 +660,7 @@
       // Authentication Session (Guest Mode by Default)
       const [session, setSession] = useState(() => {
         try {
-          const savedSessionId = localStorage.getItem(LS_SESSION_KEY);
+          const savedSessionId = safeStorage.getItem(LS_SESSION_KEY);
           if (savedSessionId) {
             const accounts = readAccounts();
             if (accounts[savedSessionId]) {
@@ -656,7 +693,7 @@
       const [isAICoachOpen, setIsAICoachOpen] = useState(false);
       const [aiCoachResponse, setAiCoachResponse] = useState('');
       const [isAiLoading, setIsAiLoading] = useState(false);
-      const [geminiApiKey, setGeminiApiKey] = useState(() => localStorage.getItem(LS_GEMINI_KEY) || '');
+      const [geminiApiKey, setGeminiApiKey] = useState(() => safeStorage.getItem(LS_GEMINI_KEY) || '');
       const [isEditingKey, setIsEditingKey] = useState(false);
 
       // Modals & UI States
@@ -694,7 +731,7 @@
         document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
         document.documentElement.lang = lang;
         document.title = lang === 'ar' ? 'Sales OS - نظام التشغيل الشخصي للمبيعات' : 'Sales OS - Personal Sales Operating System';
-        localStorage.setItem(LS_LANG_KEY, lang);
+        safeStorage.setItem(LS_LANG_KEY, lang);
       }, [lang, isRTL]);
 
       // Focus Mode Countdown with drift-prevention
@@ -753,7 +790,7 @@
             if (!error && data && data.data) saved = data.data;
           } else {
             try {
-              const raw = localStorage.getItem(LS_DATA_PREFIX + session.id);
+              const raw = safeStorage.getItem(LS_DATA_PREFIX + session.id);
               saved = raw ? JSON.parse(raw) : null;
             } catch (e) { saved = null; }
           }
@@ -780,7 +817,7 @@
           if (SUPABASE_READY && !session.isGuest) {
             supabaseClient.from('user_data').upsert({ user_id: session.id, data: payload, updated_at: new Date().toISOString() });
           } else {
-            localStorage.setItem(LS_DATA_PREFIX + session.id, JSON.stringify(payload));
+            safeStorage.setItem(LS_DATA_PREFIX + session.id, JSON.stringify(payload));
           }
         }, 600);
         return () => clearTimeout(saveTimerRef.current);
@@ -789,16 +826,16 @@
       const handleLoginSuccess = (newSession, keepData) => {
         if (keepData) {
           const payload = { habits, journalEntries, tasks, deals, calcForm, totalFocusMinutes };
-          localStorage.setItem(LS_DATA_PREFIX + newSession.id, JSON.stringify(payload));
+          safeStorage.setItem(LS_DATA_PREFIX + newSession.id, JSON.stringify(payload));
         }
-        localStorage.setItem(LS_SESSION_KEY, newSession.id);
+        safeStorage.setItem(LS_SESSION_KEY, newSession.id);
         setSession(newSession);
         showToast(lang === 'ar' ? 'تم تسجيل الدخول بنجاح ومزامنة البيانات.' : 'Logged in successfully.');
       };
 
       const handleLogout = () => {
         if (!window.confirm(t.confirmLogout)) return;
-        localStorage.removeItem(LS_SESSION_KEY);
+        safeStorage.removeItem(LS_SESSION_KEY);
         setSession({ id: GUEST_ID, email: 'Guest (وضع التجربة)', isGuest: true });
         showToast(lang === 'ar' ? 'تم تسجيل الخروج والعودة لوضع التجربة.' : 'Returned to Guest Mode.');
       };
@@ -1053,7 +1090,7 @@
         <div className={`group-item p-3 rounded-xl border bg-zinc-800/40 space-y-2 ${tk.fromCalculator ? 'border-amber-500/40 ring-1 ring-amber-500/10' : 'border-zinc-700/50'}`}>
           <div className="flex items-start gap-2.5">
             <button onClick={() => toggleTask(tk.id)} aria-label={tk.completed ? t.markUndone : t.markDone}
-              className={`w-5 h-5 mt-0.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${tk.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950 font-bold' : 'border-slate-600 hover:border-amber-400'}`}>
+              className={`w-6 h-6 sm:w-5 sm:h-5 mt-0.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${tk.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950 font-bold' : 'border-slate-600 hover:border-amber-400'}`}>
               {tk.completed && <Icon name="check" className="w-3.5 h-3.5" />}
             </button>
             <div className="flex-1 min-w-0">
@@ -1070,7 +1107,7 @@
                 )}
               </div>
             </div>
-            <button onClick={() => deleteTask(tk.id)} aria-label={t.delete} className="reveal-on-hover shrink-0 p-1 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
+            <button onClick={() => deleteTask(tk.id)} aria-label={t.delete} className="reveal-on-hover shrink-0 p-2 sm:p-1 rounded-md text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
               <Icon name="trash" className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -1082,8 +1119,8 @@
       return (
         <div className={`min-h-screen font-sans ${theme === 'dark' ? 'bg-[#09090b] text-slate-100' : 'bg-slate-50 text-slate-800'} transition-colors duration-200 flex flex-col md:flex-row`}>
 
-          {/* SIDEBAR NAVIGATION */}
-          <aside className={`w-full md:w-64 border-b md:border-b-0 ${isRTL ? 'md:border-l' : 'md:border-r'} ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]' : 'border-slate-200 bg-white'} flex flex-col justify-between shrink-0 p-4`}>
+          {/* SIDEBAR NAVIGATION (Desktop & Large Tablet) */}
+          <aside className={`hidden md:flex w-64 ${isRTL ? 'border-l' : 'border-r'} ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]' : 'border-slate-200 bg-white'} flex-col justify-between shrink-0 p-4 sticky top-0 h-screen overflow-y-auto`}>
             <div>
               <div className="flex items-center gap-3 mb-5 px-2">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shrink-0">
@@ -1165,28 +1202,45 @@
           {/* MAIN CONTENT AREA */}
           <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
 
-            {/* TOP HEADER BAR (CORRECTED CLOSING BUTTON TAG) */}
-            <header className={`h-16 px-6 border-b ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]/80' : 'border-slate-200 bg-white/80'} backdrop-blur-md sticky top-0 z-20 flex items-center justify-between gap-4`}>
+            {/* TOP HEADER BAR (Mobile & Desktop Responsive) */}
+            <header className={`h-14 sm:h-16 px-3.5 sm:px-6 border-b ${theme === 'dark' ? 'border-zinc-800 bg-[#0c0c0e]/90' : 'border-slate-200 bg-white/90'} backdrop-blur-md sticky top-0 z-20 flex items-center justify-between gap-2 sm:gap-4`}>
+              
+              {/* Brand Icon on Mobile */}
+              <div className="flex items-center gap-2 md:hidden">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-md shrink-0">
+                  <Icon name="compass" className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-extrabold text-sm text-slate-100 hidden xs:inline">{t.appName}</span>
+              </div>
+
+              {/* Search button (Compact on mobile, expanded on desktop) */}
               <button onClick={() => setIsSearchOpen(true)}
-                className="flex-1 max-w-md flex items-center justify-between px-3.5 py-2 rounded-xl text-xs bg-zinc-900 text-slate-400 border border-zinc-800 hover:border-slate-500 transition-all">
-                <div className="flex items-center gap-2">
-                  <Icon name="search" className="w-4 h-4 text-slate-400" />
-                  <span>{t.searchPlaceholder}</span>
+                className="flex-1 max-w-xs md:max-w-md flex items-center justify-between px-3 py-1.5 sm:py-2 rounded-xl text-xs bg-zinc-900/90 text-slate-400 border border-zinc-800 hover:border-slate-500 transition-all">
+                <div className="flex items-center gap-2 truncate">
+                  <Icon name="search" className="w-4 h-4 text-slate-400 shrink-0" />
+                  <span className="truncate">{t.searchPlaceholder}</span>
                 </div>
                 <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded border border-slate-700 font-mono">/</kbd>
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                {/* Mobile Quick AI Coach Button */}
+                <button onClick={() => runAICoachAnalysis()} aria-label={t.aiCoach}
+                  className="md:hidden px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1 text-[11px] font-bold shadow-sm">
+                  <Icon name="brain" className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>AI</span>
+                </button>
+
                 <button onClick={() => setIsJournalModalOpen(true)}
-                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md">
+                  className="hidden sm:flex px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs items-center gap-1.5 transition-all shadow-md">
                   <Icon name="bookMarked" className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{t.writeJournalEntry}</span>
+                  <span>{t.writeJournalEntry}</span>
                 </button>
 
                 <button onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} aria-label={t.languageToggle}
-                  className="p-2 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-zinc-800 text-slate-300 border border-zinc-800">
+                  className="p-2 rounded-xl text-xs font-bold flex items-center gap-1 hover:bg-zinc-800 text-slate-300 border border-zinc-800">
                   <Icon name="languages" className="w-4 h-4 text-indigo-400" />
-                  <span className="text-[11px] font-bold">{t.languageToggle}</span>
+                  <span className="text-[11px] font-bold hidden xs:inline">{t.languageToggle}</span>
                 </button>
 
                 <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme"
@@ -1194,13 +1248,19 @@
                   <Icon name={theme === 'dark' ? 'sun' : 'moon'} className="w-4 h-4" />
                 </button>
 
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-indigo-500 flex items-center justify-center text-slate-950 font-black text-xs ring-2 ring-amber-500/30">
-                  OS
-                </div>
+                {/* Account status badge */}
+                <button onClick={() => session.isGuest ? setIsAuthModalOpen(true) : handleLogout()}
+                  title={session.isGuest ? t.loginOrSignup : t.logout}
+                  className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1.5 border transition-all ${
+                    session.isGuest ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                  }`}>
+                  <span className={`w-2 h-2 rounded-full ${session.isGuest ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`}></span>
+                  <span className="hidden sm:inline truncate max-w-[90px]">{session.isGuest ? t.guestMode : session.email}</span>
+                </button>
               </div>
             </header>
 
-            <div className="p-6 max-w-5xl w-full mx-auto space-y-6">
+            <div className="p-3.5 sm:p-6 max-w-5xl w-full mx-auto space-y-5 sm:space-y-6 pb-28 md:pb-8">
 
               {/* TAB 1: TODAY'S FOCUS DASHBOARD */}
               {currentTab === 'dashboard' && (
@@ -1754,7 +1814,7 @@
 
           {/* SEARCH MODAL */}
           {isSearchOpen && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-24 px-4" onClick={() => setIsSearchOpen(false)}>
+            <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-start justify-center pt-12 sm:pt-24 px-3 sm:px-4" onClick={() => setIsSearchOpen(false)}>
               <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-fadeIn" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
                   <Icon name="search" className="w-4 h-4 text-slate-400 shrink-0" />
@@ -1781,8 +1841,9 @@
 
           {/* JOURNAL MODAL */}
           {isJournalModalOpen && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4" onClick={() => setIsJournalModalOpen(false)}>
-              <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto animate-fadeIn" onClick={e => e.stopPropagation()}>
+            <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setIsJournalModalOpen(false)}>
+              <div className="w-full max-w-lg bg-zinc-900 border-t sm:border border-zinc-800 rounded-t-3xl sm:rounded-2xl shadow-2xl p-5 sm:p-6 space-y-4 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto animate-fadeIn pb-safe" onClick={e => e.stopPropagation()}>
+                <div className="w-10 h-1 bg-zinc-700/80 rounded-full mx-auto sm:hidden -mt-1 mb-2"></div>
                 <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                   <h3 className="font-bold text-sm text-slate-100">{t.writeJournalEntry}</h3>
                   <button onClick={() => setIsJournalModalOpen(false)} aria-label={t.close} className="p-1 text-slate-400 hover:text-white">
@@ -1821,8 +1882,9 @@
 
           {/* DEAL MODAL */}
           {isDealModalOpen && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4" onClick={() => setIsDealModalOpen(false)}>
-              <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-fadeIn" onClick={e => e.stopPropagation()}>
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setIsDealModalOpen(false)}>
+              <div className="w-full max-w-sm bg-zinc-900 border-t sm:border border-zinc-800 rounded-t-3xl sm:rounded-2xl shadow-2xl p-5 sm:p-6 space-y-4 animate-fadeIn pb-safe" onClick={e => e.stopPropagation()}>
+                <div className="w-10 h-1 bg-zinc-700/80 rounded-full mx-auto sm:hidden -mt-1 mb-2"></div>
                 <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                   <h3 className="font-bold text-sm text-slate-100">{t.addDeal}</h3>
                   <button onClick={() => setIsDealModalOpen(false)} aria-label={t.close} className="p-1 text-slate-400 hover:text-white"><Icon name="x" className="w-4 h-4" /></button>
@@ -1858,8 +1920,9 @@
 
           {/* TASK MODAL */}
           {isTaskModalOpen && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4" onClick={() => setIsTaskModalOpen(false)}>
-              <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-fadeIn" onClick={e => e.stopPropagation()}>
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setIsTaskModalOpen(false)}>
+              <div className="w-full max-w-sm bg-zinc-900 border-t sm:border border-zinc-800 rounded-t-3xl sm:rounded-2xl shadow-2xl p-5 sm:p-6 space-y-4 animate-fadeIn pb-safe" onClick={e => e.stopPropagation()}>
+                <div className="w-10 h-1 bg-zinc-700/80 rounded-full mx-auto sm:hidden -mt-1 mb-2"></div>
                 <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                   <h3 className="font-bold text-sm text-slate-100">{t.addTask}</h3>
                   <button onClick={() => setIsTaskModalOpen(false)} aria-label={t.close} className="p-1 text-slate-400 hover:text-white"><Icon name="x" className="w-4 h-4" /></button>
@@ -1948,7 +2011,7 @@
                         <input type="password" value={geminiApiKey} onChange={e => setGeminiApiKey(e.target.value)}
                           placeholder="AIzaSy..."
                           className="flex-1 p-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs text-slate-100 outline-none focus:border-amber-500" />
-                        <button onClick={() => { localStorage.setItem(LS_GEMINI_KEY, geminiApiKey); setIsEditingKey(false); showToast(t.save); }}
+                        <button onClick={() => { safeStorage.setItem(LS_GEMINI_KEY, geminiApiKey); setIsEditingKey(false); showToast(t.save); }}
                           className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400">
                           {t.saveApiKey}
                         </button>
@@ -1988,8 +2051,8 @@
             </div>
           )}
 
-          {/* FLOATING ACTION BUTTON (FAB) */}
-          <div className={`fixed bottom-6 ${isRTL ? 'left-6' : 'right-6'} z-40 flex flex-col items-end gap-2`}>
+          {/* FLOATING ACTION BUTTON (FAB - Elevated above mobile bottom bar) */}
+          <div className={`fixed bottom-20 md:bottom-6 ${isRTL ? 'left-4 sm:left-6' : 'right-4 sm:right-6'} z-40 flex flex-col items-end gap-2`}>
             {isFABOpen && (
               <div className="flex flex-col gap-2 animate-fadeIn">
                 <button onClick={() => { setIsFABOpen(false); setIsTaskModalOpen(true); }} className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-slate-200 hover:border-amber-500 shadow-lg flex items-center gap-2">
@@ -2011,6 +2074,24 @@
               <Icon name={isFABOpen ? 'x' : 'plus'} className="w-6 h-6" />
             </button>
           </div>
+
+          {/* MOBILE BOTTOM NAVIGATION BAR (Native iOS / iPadOS Tab Bar) */}
+          <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-30 ${theme === 'dark' ? 'bg-[#0c0c0e]/95 border-zinc-800/90' : 'bg-white/95 border-slate-200'} backdrop-blur-xl border-t px-2 py-1.5 flex items-center justify-around pb-safe transition-colors shadow-2xl`}>
+            {NAV_ITEMS.map(item => {
+              const active = currentTab === item.id;
+              return (
+                <button key={item.id} onClick={() => setCurrentTab(item.id)}
+                  className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all relative ${
+                    active ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+                  }`}>
+                  <div className={`p-1 rounded-lg ${active ? 'bg-amber-500/15' : ''}`}>
+                    <Icon name={item.icon} className={`w-5 h-5 ${active ? 'text-amber-400' : 'text-slate-400'}`} />
+                  </div>
+                  <span className="text-[9.5px] mt-0.5 tracking-tight truncate max-w-[56px] text-center">{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
 
         </div>
       );
